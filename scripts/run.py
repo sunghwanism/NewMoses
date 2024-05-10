@@ -94,8 +94,8 @@ def get_parser():
                         help='Size of testing dataset')
     parser.add_argument('--experiment_suff', type=str, default='',
                         help='Experiment suffix to break ambiguity')
-    
-    parser.add_argument('--data', '-d', default='ZINC', help='Dataset to use')
+    parser.add_argument('--data', default='ZINC', 
+                        help='Dataset to use')
     
     return parser
 
@@ -119,7 +119,8 @@ def train_model(config, model, train_path, test_path):
         '--config_save', config_path,
         '--vocab_save', vocab_path,
         '--log_file', log_path,
-        '--n_jobs', str(config.n_jobs)
+        '--n_jobs', str(config.n_jobs),
+        '--data', config.data
     ]
     if train_path is not None:
         args.extend(['--train_load', train_path])
