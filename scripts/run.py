@@ -156,8 +156,6 @@ def train_model(config, model, train_path, test_path):
     else:
         trainer_config.use_selfies = False
         
-
-        
     dict1 = vars(config)
     dict2 = vars(trainer_config)
     
@@ -201,7 +199,22 @@ def sample_from_model(config, model):
          '--n_samples', str(config.n_samples)]
     )[0]
     
-    sampler_script.main(model, sampler_config)
+    
+    sampler_config.data = config.data
+    
+    if config.use_selfies:
+        sampler_config.use_selfies = True
+    else:
+        sampler_config.use_selfies = False
+        
+    dict1 = vars(config)
+    dict2 = vars(sampler_config)
+    
+    whole_config = dict1.copy()
+    whole_config.update(dict2)
+    whole_config = argparse.Namespace(**whole_config)
+    
+    sampler_script.main(model, whole_config)
 
 
 def eval_metrics(config, model, test_path, test_scaffolds_path,
@@ -223,9 +236,24 @@ def eval_metrics(config, model, test_path, test_scaffolds_path,
         args.extend(['--ptest_scaffolds_path', ptest_scaffolds_path])
     if train_path is not None:
         args.extend(['--train_path', train_path])
-
+    
     eval_config = eval_parser.parse_args(args)
-    metrics = eval_script.main(eval_config, print_metrics=False)
+    
+    eval_config.data = config.data
+    
+    if config.use_selfies:
+        eval_config.use_selfies = True
+    else:
+        eval_config.use_selfies = False
+        
+    dict1 = vars(config)
+    dict2 = vars(eval_config)
+    
+    whole_config = dict1.copy()
+    whole_config.update(dict2)
+    whole_config = argparse.Namespace(**whole_config)
+    
+    metrics = eval_script.main(whole_config, print_metrics=False)
 
     return metrics
 
