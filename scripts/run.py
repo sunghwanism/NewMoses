@@ -96,6 +96,8 @@ def get_parser():
                         help='Experiment suffix to break ambiguity')
     parser.add_argument('--data', default='ZINC', 
                         help='Dataset to use')
+    parser.add_argument('--use_selfies', default=False,
+                        help='Use selfies format')
     
     return parser
 
@@ -113,23 +115,43 @@ def train_model(config, model, train_path, test_path):
         return
 
     trainer_parser = trainer_script.get_parser()
+
     args = [
         '--device', config.device,
         '--model_save', model_path,
         '--config_save', config_path,
         '--vocab_save', vocab_path,
         '--log_file', log_path,
-        '--n_jobs', str(config.n_jobs),
-        '--data', config.data
+        '--n_jobs', str(config.n_jobs)
     ]
+        
     if train_path is not None:
         args.extend(['--train_load', train_path])
+        
     if test_path is not None:
         args.extend(['--val_load', test_path])
 
     trainer_config = trainer_parser.parse_known_args(
          [model] + sys.argv[1:] + args
     )[0]
+    
+    trainer_config = vars(trainer_config)
+    
+    if config.use_selfies:
+        trainer_config['use_selfies'] = True
+    else:
+        trainer_config['use_selfies'] = False
+        
+    if config.data:
+        trainer_config['data'] = config.data
+        
+    trainer_config = argparse.Namespace(**trainer_config)
+    
+    print("-----"*25)
+    print("[trainer_config]")
+    print(trainer_config)
+    print("-----"*25)
+    
     trainer_script.main(model, trainer_config)
 
 
