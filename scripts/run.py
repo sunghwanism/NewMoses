@@ -94,6 +94,9 @@ def get_parser():
                         help='Size of testing dataset')
     parser.add_argument('--experiment_suff', type=str, default='',
                         help='Experiment suffix to break ambiguity')
+    
+    parser.add_argument('--data', '-d', default='ZINC', help='Dataset to use')
+    
     return parser
 
 

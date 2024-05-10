@@ -4,9 +4,9 @@ import pandas as pd
 
 
 AVAILABLE_SPLITS = ['train', 'test', 'test_scaffolds']
-print("#####################################################")
 
-def get_dataset(split='train'):
+
+def get_dataset(split='train', config=None):
     """
     Loads MOSES dataset
 
@@ -27,13 +27,13 @@ def get_dataset(split='train'):
         raise ValueError(
             f"Unknown split {split}. "
             f"Available splits: {AVAILABLE_SPLITS}")
-    path = os.path.join(base_path, 'data/ZINC', split+'.csv')
+    path = os.path.join(base_path, f'data/{config['data']}', split+'.csv')
     smiles = pd.read_csv(path)['SMILES'].values
     
     return smiles
 
 
-def get_statistics(split='test'):
+def get_statistics(split='test', config=None):
     base_path = os.path.dirname(__file__)
-    path = os.path.join(base_path, 'data', split+'_stats.npz')
+    path = os.path.join(base_path, f'data/{config['data']}', split+'_stats.npz')
     return np.load(path, allow_pickle=True)['stats'].item()
