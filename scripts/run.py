@@ -170,8 +170,8 @@ def train_model(config, model, train_path, test_path):
     print(whole_config)
     print("-----"*25)
     
-    init_wandb(trainer_config)
-    trainer_script.main(model, trainer_config)
+    init_wandb(whole_config)
+    trainer_script.main(model, whole_config)
 
 
 def sample_from_model(config, model):
@@ -253,6 +253,8 @@ def main(config):
                                      ptest_path, ptest_scaffolds_path,
                                      train_path)
         table = pd.DataFrame([model_metrics]).T
+        if config.nowandb:
+            wandb.log({'metrics': table})
         if len(models) == 1:
             metrics_path = ''.join(
                 os.path.splitext(config.metrics)[:-1])+f'_{model}.csv'

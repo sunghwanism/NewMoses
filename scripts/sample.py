@@ -53,7 +53,8 @@ def main(model, config):
             T.update(len(current_samples))
 
     samples = pd.DataFrame(samples, columns=['SMILES'])
-    wandb.Table(dataframe=samples).to_dataframe()
+    if not config.nowandb:
+        wandb.log({'samples': samples})
     samples.to_csv(config.gen_save, index=False)
 
 

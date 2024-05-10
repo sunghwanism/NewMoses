@@ -8,6 +8,7 @@ from torch.nn.utils.rnn import pad_sequence
 from interfaces import MosesTrainer
 from utils import CharVocab, Logger
 
+import wandb
 
 class CharRNNTrainer(MosesTrainer):
 
@@ -64,6 +65,9 @@ class CharRNNTrainer(MosesTrainer):
             tqdm_data = tqdm(train_loader,
                              desc='Training (epoch #{})'.format(epoch))
             postfix = self._train_epoch(model, tqdm_data, criterion, optimizer)
+            if not self.config.nowandb:
+                    wandb.log({f"{postfix['mode']}-{k}": v \
+                        for k, v in postfix.items() if k not in ['mode']})
             if logger is not None:
                 logger.append(postfix)
                 logger.save(self.config.log_file)
@@ -72,6 +76,9 @@ class CharRNNTrainer(MosesTrainer):
                 tqdm_data = tqdm(val_loader,
                                  desc='Validation (epoch #{})'.format(epoch))
                 postfix = self._train_epoch(model, tqdm_data, criterion)
+                if not self.config.nowandb:
+                    wandb.log({f"{postfix['mode']}-{k}": v \
+                        for k, v in postfix.items() if k not in ['mode']})
                 if logger is not None:
                     logger.append(postfix)
                     logger.save(self.config.log_file)

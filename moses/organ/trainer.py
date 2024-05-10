@@ -9,6 +9,8 @@ from torch.nn.utils.rnn import pad_sequence
 from interfaces import MosesTrainer
 from utils import CharVocab, Logger
 
+import wandb
+
 
 class PolicyGradientLoss(nn.Module):
     def forward(self, outputs, targets, rewards, lengths):
@@ -102,6 +104,9 @@ class ORGANTrainer(MosesTrainer):
                 desc='Generator training (epoch #{})'.format(epoch))
             postfix = self._pretrain_generator_epoch(model, tqdm_data,
                                                      criterion, optimizer)
+            if not self.config.nowandb:
+                    wandb.log({f"{postfix['mode']}-{k}": v \
+                        for k, v in postfix.items() if k not in ['mode']})
             if logger is not None:
                 logger.append(postfix)
                 logger.save(self.config.log_file)
@@ -113,6 +118,9 @@ class ORGANTrainer(MosesTrainer):
                 postfix = self._pretrain_generator_epoch(
                     model, tqdm_data, criterion
                 )
+                if not self.config.nowandb:
+                    wandb.log({f"{postfix['mode']}-{k}": v \
+                        for k, v in postfix.items() if k not in ['mode']})
                 if logger is not None:
                     logger.append(postfix)
                     logger.save(self.config.log_file)
@@ -195,6 +203,9 @@ class ORGANTrainer(MosesTrainer):
             postfix = self._pretrain_discriminator_epoch(
                 model, tqdm_data, criterion, optimizer
             )
+            if not self.config.nowandb:
+                    wandb.log({f"{postfix['mode']}-{k}": v \
+                        for k, v in postfix.items() if k not in ['mode']})
             if logger is not None:
                 logger.append(postfix)
                 logger.save(self.config.log_file)
@@ -207,6 +218,9 @@ class ORGANTrainer(MosesTrainer):
                 postfix = self._pretrain_discriminator_epoch(
                     model, tqdm_data, criterion
                 )
+                if not self.config.nowandb:
+                    wandb.log({f"{postfix['mode']}-{k}": v \
+                        for k, v in postfix.items() if k not in ['mode']})
                 if logger is not None:
                     logger.append(postfix)
                     logger.save(self.config.log_file)
@@ -345,6 +359,9 @@ class ORGANTrainer(MosesTrainer):
         for iter_ in range(self.config.pg_iters):
             postfix = self._policy_gradient_iter(model, train_loader,
                                                  criterion, optimizer, iter_)
+            if not self.config.nowandb:
+                    wandb.log({f"{postfix['mode']}-{k}": v \
+                        for k, v in postfix.items() if k not in ['mode']})
             if logger is not None:
                 logger.append(postfix)
                 logger.save(self.config.log_file)

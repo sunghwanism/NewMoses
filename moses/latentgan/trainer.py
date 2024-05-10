@@ -14,6 +14,7 @@ from .model import LatentMolsDataset
 from .model import load_model
 from .model import Sampler
 
+import wandb
 
 class LatentGANTrainer(MosesTrainer):
 
@@ -111,6 +112,9 @@ class LatentGANTrainer(MosesTrainer):
 
             postfix = self._train_epoch(model, tqdm_data,
                                         optimizer_disc, optimizer_gen)
+            if not self.config.nowandb:
+                    wandb.log({f"{postfix['mode']}-{k}": v \
+                        for k, v in postfix.items() if k not in ['mode']})
             if logger is not None:
                 logger.append(postfix)
                 logger.save(self.config.log_file)
@@ -119,6 +123,9 @@ class LatentGANTrainer(MosesTrainer):
                 tqdm_data = tqdm(val_loader,
                                  desc='Validation (epoch #{})'.format(epoch))
                 postfix = self._train_epoch(model, tqdm_data)
+                if not self.config.nowandb:
+                    wandb.log({f"{postfix['mode']}-{k}": v \
+                        for k, v in postfix.items() if k not in ['mode']})
                 if logger is not None:
                     logger.append(postfix)
                     logger.save(self.config.log_file)
