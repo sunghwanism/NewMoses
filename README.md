@@ -14,6 +14,7 @@ conda install pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit
 ```
 
 if you use MacBook (or DO NOT USE cuda), use this code
+
 ```sh
 conda create -n moses python=3.8 -y \
 conda activate moses \
@@ -32,10 +33,15 @@ pip install torch==1.12.0+cpu torchvision==0.13.0+cpu torchaudio==0.12.0 --extra
     - (!!Caution!!) if you use --use_selfies with any kind of format (ex: 0,1, ..., True, False...), the model is trained by selfies
 
 Example
-'''sh
-python scripts/run.py --device cuda:0 —model vae --use_selfies 1 --n_batch 2048
-'''sh
 
+```sh
+python scripts/run.py --device cuda:0 —model vae --use_selfies 1 --n_batch 2048
+```
+
+For use the wandb, you need to setup below file
+```sh
+python scripts/run.py --device cuda:0 —model vae --use_selfies 1 --n_batch 2048 --wandb_entity {wandb_id} --wandb_project {project_name} --nowandb 0
+```
 
 ## Adding the Dataset
 If you train model using your model, add the splited dataset named train.csv, test.csv in moses > dataset > data > {datasetname} > files
