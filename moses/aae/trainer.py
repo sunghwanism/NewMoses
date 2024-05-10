@@ -106,6 +106,7 @@ class AAETrainer(MosesTrainer):
         for i, (encoder_inputs,
                 decoder_inputs,
                 decoder_targets) in enumerate(tqdm_data):
+                        
             encoder_inputs = (data.to(model.device)
                               for data in encoder_inputs)
             decoder_inputs = (data.to(model.device)
@@ -173,7 +174,7 @@ class AAETrainer(MosesTrainer):
                 optimizers['autoencoder'].zero_grad()
                 optimizers['discriminator'].zero_grad()
                 total_loss.backward()
-                for parameter in model.parameters():
+                for _, parameter in model.named_parameters():
                     parameter.grad.clamp_(-5, 5)
                 if i % (self.config.discriminator_steps + 1) == 0:
                     optimizers['autoencoder'].step()
@@ -210,8 +211,6 @@ class AAETrainer(MosesTrainer):
 
         model.zero_grad()
         for epoch in range(self.config.train_epochs):
-            for scheduler in schedulers.values():
-                scheduler.step()
 
             tqdm_data = tqdm(train_loader,
                              desc='Training (epoch #{})'.format(epoch))
@@ -236,6 +235,9 @@ class AAETrainer(MosesTrainer):
                            self.config.model_save[:-3] +
                            '_{0:03d}.pt'.format(epoch))
                 model = model.to(device)
+                                
+            for scheduler in schedulers.values():
+                scheduler.step()
 
     def get_vocabulary(self, data):
         return CharVocab.from_data(data)

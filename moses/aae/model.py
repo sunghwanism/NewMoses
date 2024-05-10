@@ -21,6 +21,7 @@ class Encoder(nn.Module):
 
     def forward(self, x, lengths):
         batch_size = x.shape[0]
+        lengths = lengths.cpu().numpy()
 
         x = self.embedding_layer(x)
         x = pack_padded_sequence(x, lengths, batch_first=True)
