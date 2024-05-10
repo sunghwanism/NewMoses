@@ -94,9 +94,12 @@ def get_parser():
                         help='Size of testing dataset')
     parser.add_argument('--experiment_suff', type=str, default='',
                         help='Experiment suffix to break ambiguity')
-    
-    parser.add_argument('--data', '-d', default='ZINC', help='Dataset to use')
-    
+    parser.add_argument('--data', type=str, default='ZINC', help = 'Dataset to use')
+
+    # SELFIES로 할지말지 결정하는 argument 추가
+    parser.add_argument('--use_selfies', default=False,
+                        help='Whether to use SELFIES or SMILES')
+
     return parser
 
 
@@ -119,7 +122,11 @@ def train_model(config, model, train_path, test_path):
         '--config_save', config_path,
         '--vocab_save', vocab_path,
         '--log_file', log_path,
-        '--n_jobs', str(config.n_jobs)
+        '--n_jobs', str(config.n_jobs),
+        '--data', config.data,
+
+        # SELFIES로 할지말지 결정하는 argument 추가
+        '--use_selfies', str(config.use_selfies)
     ]
     if train_path is not None:
         args.extend(['--train_load', train_path])

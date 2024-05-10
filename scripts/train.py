@@ -54,7 +54,12 @@ def main(model, config):
             'vocab_load path does not exist!'
         vocab = torch.load(config.vocab_load)
     else:
-        vocab = trainer.get_vocabulary(train_data)
+        vocab = trainer.get_vocabulary(train_data )
+
+    print(f'Vocabulary size: {len(vocab)}')
+
+    for idx in range(len(vocab)):
+        print(vocab.id2char(idx))
 
     if config.vocab_save is not None:
         torch.save(vocab, config.vocab_save)
@@ -65,6 +70,7 @@ def main(model, config):
     model = model.to('cpu')
     torch.save(model.state_dict(), config.model_save)
 
+#TODO : script에서 실행할 때, use_selfies를 False로 해도 왜 자꾸 selfies로 변환이 되어서 사용되지?
 
 if __name__ == '__main__':
     parser = get_parser()

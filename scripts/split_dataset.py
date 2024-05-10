@@ -35,6 +35,7 @@ def get_parser():
                         help='GPU device id')
     parser.add_argument('--batch_size', type=int, default=512,
                         help='Batch size for FCD calculation')
+
     return parser
 
 
