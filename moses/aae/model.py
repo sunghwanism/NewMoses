@@ -53,6 +53,7 @@ class Decoder(nn.Module):
             states = (h0, c0)
 
         x = self.embedding_layer(x)
+        lengths = lengths.cpu().numpy()
         x = pack_padded_sequence(x, lengths, batch_first=True)
         x, states = self.lstm_layer(x, states)
         x, lengths = pad_packed_sequence(x, batch_first=True)
