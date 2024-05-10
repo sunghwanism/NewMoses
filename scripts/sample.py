@@ -3,6 +3,7 @@ import sys
 import torch
 import rdkit
 import pandas as pd
+import wandb
 from tqdm.auto import tqdm
 from models_storage import ModelsStorage
 from script_utils import add_sample_args, set_seed
@@ -52,6 +53,7 @@ def main(model, config):
             T.update(len(current_samples))
 
     samples = pd.DataFrame(samples, columns=['SMILES'])
+    wandb.Table(dataframe=samples).to_dataframe()
     samples.to_csv(config.gen_save, index=False)
 
 

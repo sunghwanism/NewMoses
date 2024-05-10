@@ -8,6 +8,7 @@ from interfaces import MosesTrainer
 from utils import OneHotVocab, Logger, CircularBuffer
 from vae.misc import CosineAnnealingLRWithRestart, KLAnnealer
 
+import wandb
 
 class VAETrainer(MosesTrainer):
     def __init__(self, config):
@@ -102,6 +103,9 @@ class VAETrainer(MosesTrainer):
                              desc='Training (epoch #{})'.format(epoch))
             postfix = self._train_epoch(model, epoch,
                                         tqdm_data, kl_weight, optimizer)
+            if not self.config.nowandb:
+                wandb.log({f"{postfix['mode']}-{k}": v \
+                    for k, v in postfix.items() if k not in ['mode']}) 
             if logger is not None:
                 logger.append(postfix)
                 logger.save(self.config.log_file)
@@ -110,6 +114,9 @@ class VAETrainer(MosesTrainer):
                 tqdm_data = tqdm(val_loader,
                                  desc='Validation (epoch #{})'.format(epoch))
                 postfix = self._train_epoch(model, epoch, tqdm_data, kl_weight)
+                if not self.config.nowandb:
+                    wandb.log({f"{postfix['mode']}-{k}": v \
+                        for k, v in postfix.items() if k not in ['mode']})
                 if logger is not None:
                     logger.append(postfix)
                     logger.save(self.config.log_file)
