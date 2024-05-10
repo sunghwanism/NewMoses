@@ -1,5 +1,5 @@
 import argparse
-from moses.organ.metrics_reward import MetricsReward
+from organ.metrics_reward import MetricsReward
 
 
 def get_parser(parser=None):

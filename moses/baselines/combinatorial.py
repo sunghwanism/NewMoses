@@ -7,9 +7,11 @@ from tqdm.auto import tqdm
 from rdkit import Chem
 from rdkit.Chem.BRICS import reactionDefs
 
+import sys
+sys.path.append("./")
 import moses
-from moses.metrics.utils import fragmenter
-from moses.utils import mapper
+from metrics.utils import fragmenter
+from utils import mapper
 
 isotope_re = re.compile(r'\[([0-9]+)[ab]?\*\]')
 

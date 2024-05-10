@@ -8,8 +8,8 @@ import torch
 import torch.optim as optim
 from rdkit import Chem
 
-from moses.interfaces import MosesTrainer
-from moses.utils import CharVocab, Logger
+from interfaces import MosesTrainer
+from utils import CharVocab, Logger
 from .model import LatentMolsDataset
 from .model import load_model
 from .model import Sampler

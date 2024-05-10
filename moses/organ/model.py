@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 
-from moses.organ.metrics_reward import MetricsReward
+from organ.metrics_reward import MetricsReward
 
 
 class Generator(nn.Module):

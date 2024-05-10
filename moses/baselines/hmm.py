@@ -2,6 +2,9 @@ import pickle
 import numpy as np
 from pomegranate import HiddenMarkovModel, DiscreteDistribution
 
+
+import sys
+sys.path.append("./")
 import moses
 
 

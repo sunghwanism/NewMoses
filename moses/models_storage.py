@@ -1,8 +1,8 @@
-from moses.vae import VAE, VAETrainer, vae_parser
-from moses.organ import ORGAN, ORGANTrainer, organ_parser
-from moses.aae import AAE, AAETrainer, aae_parser
-from moses.char_rnn import CharRNN, CharRNNTrainer, char_rnn_parser
-from moses.latentgan import LatentGAN, LatentGANTrainer, latentGAN_parser
+from vae import VAE, VAETrainer, vae_parser
+from organ import ORGAN, ORGANTrainer, organ_parser
+from aae import AAE, AAETrainer, aae_parser
+from char_rnn import CharRNN, CharRNNTrainer, char_rnn_parser
+from latentgan import LatentGAN, LatentGANTrainer, latentGAN_parser
 
 
 class ModelsStorage():

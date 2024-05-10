@@ -12,9 +12,9 @@ from rdkit.Chem.AllChem import GetMorganFingerprintAsBitVect as Morgan
 from rdkit.Chem.QED import qed
 from rdkit.Chem.Scaffolds import MurckoScaffold
 from rdkit.Chem import Descriptors
-from moses.metrics.SA_Score import sascorer
-from moses.metrics.NP_Score import npscorer
-from moses.utils import mapper, get_mol
+from metrics.SA_Score import sascorer
+from metrics.NP_Score import npscorer
+from utils import mapper, get_mol
 
 _base_dir = os.path.split(__file__)[0]
 _mcf = pd.read_csv(os.path.join(_base_dir, 'mcf.csv'))
