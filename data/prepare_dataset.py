@@ -1,11 +1,17 @@
 import argparse
 import gzip
+import csv
 import logging
 from functools import partial
 from multiprocessing import Pool
 import pandas as pd
+
 from tqdm.auto import tqdm
 from rdkit import Chem
+
+import os
+import sys
+sys.path.append("../moses")
 
 from moses.metrics import mol_passes_filters, compute_scaffold
 
@@ -19,16 +25,26 @@ def get_parser():
 
     parser.add_argument(
         '--output', '-o',
-        type=str, default='dataset_v1.csv',
+        type=str, default='./data/dataset_v1.csv',
         help='Path for constructed dataset'
     )
     parser.add_argument(
         '--seed', type=int, default=0, help='Random state'
     )
     parser.add_argument(
+        '--data', type=str,
+        default='QM9',
+        help='type of dataset'
+    )
+    parser.add_argument(
         '--zinc', type=str,
-        default='../data/11_p0.smi.gz',
+        default='./data/11_p0.smi.gz',
         help='path to .smi.gz file with ZINC smiles'
+    )
+    parser.add_argument(
+        '--qm9', type=str,
+        default='./data/qm9_cleaned.txt.gz',
+        help='path to .smi.gz file with QM9 smiles'
     )
     parser.add_argument(
         '--n_jobs', type=int, default=1,
@@ -46,7 +62,7 @@ def get_parser():
 
 
 def process_molecule(mol_row, isomeric):
-    mol_row = mol_row.decode('utf-8')
+ #   mol_row = mol_row.decode('utf-8')
     smiles, _id = mol_row.split()
     if not mol_passes_filters(smiles):
         return None
@@ -59,6 +75,15 @@ def unzip_dataset(path):
     logger.info("Unzipping dataset")
     with gzip.open(path) as smi:
         lines = smi.readlines()
+        lines = [line.replace(b'\r\r\n', b'\n').replace(b'\t', b' ').decode('utf-8') for line in lines]
+
+    return lines
+
+def unzip_dataset_csv(path):
+    logger.info("Unzipping dataset")
+    with gzip.open(path, 'rt', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        lines = [item for sublist in reader for item in sublist if item]  # Flatten and remove empty items
     return lines
 
 
@@ -102,13 +127,15 @@ def split_dataset(dataset, seed):
 
 
 def main(config):
-    lines = unzip_dataset(config.zinc)
+    if config.data == 'ZINC':
+        lines = unzip_dataset(config.zinc)
+    if config.data == 'QM9':
+        lines = unzip_dataset(config.qm9)
     dataset = filter_lines(lines, config.n_jobs, config.isomeric)
     dataset = split_dataset(dataset, config.seed)
     if not config.keep_ids:
         dataset.drop('ID', 1, inplace=True)
     dataset.to_csv(config.output, index=None)
-
 
 if __name__ == '__main__':
     parser = get_parser()
