@@ -103,6 +103,7 @@ class VAETrainer(MosesTrainer):
                              desc='Training (epoch #{})'.format(epoch))
             postfix = self._train_epoch(model, epoch,
                                         tqdm_data, kl_weight, optimizer)
+            
             if not self.config.nowandb:
                 wandb.log({f"{postfix['mode']}-{k}": v \
                     for k, v in postfix.items() if k not in ['mode']}) 

@@ -2,6 +2,7 @@ import os
 import argparse
 import sys
 sys.path.append("./moses")
+import datetime
 
 import importlib.util
 import pandas as pd
@@ -28,32 +29,57 @@ sampler_script = load_module('sample', 'sample.py')
 
 
 def get_model_path(config, model):
+    unique_folder = f'{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    unique_folder_path = os.path.join(config.checkpoint_dir, unique_folder)
+    if not os.path.exists(unique_folder_path):
+        os.mkdir(unique_folder_path)
+        
     return os.path.join(
-        config.checkpoint_dir, model + config.experiment_suff + '_model.pt'
+        unique_folder_path, model + config.experiment_suff + '_model.pt'
     )
 
 
 def get_log_path(config, model):
+    unique_folder = f'{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    unique_folder_path = os.path.join(config.checkpoint_dir, unique_folder)
+    if not os.path.exists(unique_folder_path):
+        os.mkdir(unique_folder_path)
+        
     return os.path.join(
-        config.checkpoint_dir, model + config.experiment_suff + '_log.txt'
+        unique_folder_path, model + config.experiment_suff + '_log.txt'
     )
 
 
 def get_config_path(config, model):
+    unique_folder = f'{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    unique_folder_path = os.path.join(config.checkpoint_dir, unique_folder)
+    if not os.path.exists(unique_folder_path):
+        os.mkdir(unique_folder_path)
+        
     return os.path.join(
-        config.checkpoint_dir, model + config.experiment_suff + '_config.pt'
+        unique_folder_path, model + config.experiment_suff + '_config.pt'
     )
 
 
 def get_vocab_path(config, model):
+    unique_folder = f'{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    unique_folder_path = os.path.join(config.checkpoint_dir, unique_folder)
+    if not os.path.exists(unique_folder_path):
+        os.mkdir(unique_folder_path)
+        
     return os.path.join(
-        config.checkpoint_dir, model + config.experiment_suff + '_vocab.pt'
+        unique_folder_path, model + config.experiment_suff + '_vocab.pt'
     )
 
 
 def get_generation_path(config, model):
+    unique_folder = f'{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    unique_folder_path = os.path.join(config.checkpoint_dir, unique_folder)
+    if not os.path.exists(unique_folder_path):
+        os.mkdir(unique_folder_path)
+        
     return os.path.join(
-        config.checkpoint_dir,
+        unique_folder_path,
         model + config.experiment_suff + '_generated.csv'
     )
 
@@ -81,9 +107,9 @@ def get_parser():
                         help='Path to precalculated scaffold test npz')
     parser.add_argument('--checkpoint_dir', type=str, default='./checkpoints',
                         help='Directory for checkpoints')
-    parser.add_argument('--n_samples', type=int, default=30, # 30000
+    parser.add_argument('--n_samples', type=int, default=30000,
                         help='Number of samples to sample')
-    parser.add_argument('--n_jobs', type=int, default=1,
+    parser.add_argument('--n_jobs', type=int, default=4,
                         help='Number of threads')
     parser.add_argument('--device', type=str, default='cpu',
                         help='GPU device index in form `cuda:N` (or `cpu`)')
@@ -99,7 +125,8 @@ def get_parser():
                         help='Dataset to use')
     parser.add_argument('--use_selfies', default=False,
                         help='Use selfies format')
-    parser.add_argument('--wandb_entity', type=str, default='laymond1',
+    
+    parser.add_argument('--wandb_entity', type=str, default='msh2044',
                         help='Wandb entity name')
     parser.add_argument('--wandb_project', type=str, default='Moses',
                         help='Wandb project name')
