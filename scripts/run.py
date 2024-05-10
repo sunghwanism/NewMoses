@@ -29,7 +29,11 @@ sampler_script = load_module('sample', 'sample.py')
 
 
 def get_model_path(config, model):
-    unique_folder = f'{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    if len(config.experiment_suff) > 0:
+        unique_folder = f'{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    else:
+        unique_folder = f'{model}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        
     unique_folder_path = os.path.join(config.checkpoint_dir, unique_folder)
     if not os.path.exists(unique_folder_path):
         os.mkdir(unique_folder_path)
@@ -40,7 +44,10 @@ def get_model_path(config, model):
 
 
 def get_log_path(config, model):
-    unique_folder = f'{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    if len(config.experiment_suff) > 0:
+        unique_folder = f'{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    else:
+        unique_folder = f'{model}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
     unique_folder_path = os.path.join(config.checkpoint_dir, unique_folder)
     if not os.path.exists(unique_folder_path):
         os.mkdir(unique_folder_path)
@@ -51,7 +58,11 @@ def get_log_path(config, model):
 
 
 def get_config_path(config, model):
-    unique_folder = f'{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    if len(config.experiment_suff) > 0:
+        unique_folder = f'{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    else:
+        unique_folder = f'{model}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        
     unique_folder_path = os.path.join(config.checkpoint_dir, unique_folder)
     if not os.path.exists(unique_folder_path):
         os.mkdir(unique_folder_path)
@@ -62,7 +73,11 @@ def get_config_path(config, model):
 
 
 def get_vocab_path(config, model):
-    unique_folder = f'{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    if len(config.experiment_suff) > 0:
+        unique_folder = f'{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    else:
+        unique_folder = f'{model}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        
     unique_folder_path = os.path.join(config.checkpoint_dir, unique_folder)
     if not os.path.exists(unique_folder_path):
         os.mkdir(unique_folder_path)
@@ -73,7 +88,11 @@ def get_vocab_path(config, model):
 
 
 def get_generation_path(config, model):
-    unique_folder = f'{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    if len(config.experiment_suff) > 0:
+        unique_folder = f'{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+    else:
+        unique_folder = f'{model}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        
     unique_folder_path = os.path.join(config.checkpoint_dir, unique_folder)
     if not os.path.exists(unique_folder_path):
         os.mkdir(unique_folder_path)
@@ -126,7 +145,7 @@ def get_parser():
     parser.add_argument('--use_selfies', default=False,
                         help='Use selfies format')
     
-    parser.add_argument('--wandb_entity', type=str, default='msh2044',
+    parser.add_argument('--wandb_entity', type=str,
                         help='Wandb entity name')
     parser.add_argument('--wandb_project', type=str, default='Moses',
                         help='Wandb project name')
