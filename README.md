@@ -33,7 +33,7 @@ pip install torch==1.12.0+cpu torchvision==0.13.0+cpu torchaudio==0.12.0 --extra
 
 Example
 '''sh
-python scripts/run.py --device cuda:0 —model vae --use_selfies 1 --n_batch
+python scripts/run.py --device cuda:0 —model vae --use_selfies 1 --n_batch 2048
 '''sh
 
 
