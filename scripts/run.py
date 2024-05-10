@@ -135,21 +135,25 @@ def train_model(config, model, train_path, test_path):
          [model] + sys.argv[1:] + args
     )[0]
     
-    trainer_config = vars(trainer_config)
+    trainer_config.data = config.data
     
     if config.use_selfies:
-        trainer_config['use_selfies'] = True
+        trainer_config.use_selfies = True
     else:
-        trainer_config['use_selfies'] = False
+        trainer_config.use_selfies = False
         
-    if config.data:
-        trainer_config['data'] = config.data
+
         
-    trainer_config = argparse.Namespace(**trainer_config)
+    dict1 = vars(config)
+    dict2 = vars(trainer_config)
+    
+    whole_config = dict1.copy()
+    whole_config.update(dict2)
+    whole_config = argparse.Namespace(**whole_config)
     
     print("-----"*25)
-    print("[trainer_config]")
-    print(trainer_config)
+    print("[Whole config]")
+    print(whole_config)
     print("-----"*25)
     
     trainer_script.main(model, trainer_config)
@@ -181,6 +185,7 @@ def sample_from_model(config, model):
          '--gen_save', get_generation_path(config, model),
          '--n_samples', str(config.n_samples)]
     )[0]
+    
     sampler_script.main(model, sampler_config)
 
 
