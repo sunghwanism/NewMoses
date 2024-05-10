@@ -1,6 +1,7 @@
 import os
 import argparse
 import sys
+sys.path.append("../moses")
 import importlib.util
 import pandas as pd
 
