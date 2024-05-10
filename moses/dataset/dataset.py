@@ -27,7 +27,7 @@ def get_dataset(split='train'):
         raise ValueError(
             f"Unknown split {split}. "
             f"Available splits: {AVAILABLE_SPLITS}")
-    path = os.path.join(base_path, 'data', split+'.csv')
+    path = os.path.join(base_path, 'data/ZINC', split+'.csv')
     smiles = pd.read_csv(path)['SMILES'].values
     
     return smiles
