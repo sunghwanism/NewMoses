@@ -5,6 +5,7 @@ sys.path.append("./moses")
 
 import importlib.util
 import pandas as pd
+import wandb
 
 from models_storage import ModelsStorage
 
@@ -98,8 +99,21 @@ def get_parser():
                         help='Dataset to use')
     parser.add_argument('--use_selfies', default=False,
                         help='Use selfies format')
+    parser.add_argument('--wandb_entity', type=str, default='laymond1',
+                        help='Wandb entity name')
+    parser.add_argument('--wandb_project', type=str, default='Moses',
+                        help='Wandb project name')
+    parser.add_argument('--nowandb', type=int, default=0,
+                        choices=[0, 1], help='Disable wandb')
     
     return parser
+
+
+def init_wandb(config):
+    if not config.nowandb:
+        assert wandb is not None, "Wandb not installed, please install it or run without wandb"
+        wandb.init(project=config.wandb_project, entity=config.wandb_entity, config=config)
+        config.wandb_url = wandb.run.get_url()
 
 
 def train_model(config, model, train_path, test_path):
@@ -156,7 +170,8 @@ def train_model(config, model, train_path, test_path):
     print(whole_config)
     print("-----"*25)
     
-    trainer_script.main(model, trainer_config)
+    init_wandb(whole_config)
+    trainer_script.main(model, whole_config)
 
 
 def sample_from_model(config, model):
@@ -238,6 +253,8 @@ def main(config):
                                      ptest_path, ptest_scaffolds_path,
                                      train_path)
         table = pd.DataFrame([model_metrics]).T
+        if config.nowandb:
+            wandb.log({'metrics': table})
         if len(models) == 1:
             metrics_path = ''.join(
                 os.path.splitext(config.metrics)[:-1])+f'_{model}.csv'

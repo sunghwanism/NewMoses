@@ -4,3 +4,4 @@ rdkit
 matplotlib
 fcd_torch==1.0.7
 tqdm
+wandb
