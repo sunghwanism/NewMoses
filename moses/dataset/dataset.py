@@ -27,7 +27,7 @@ def get_dataset(split='train', config=None):
         raise ValueError(
             f"Unknown split {split}. "
             f"Available splits: {AVAILABLE_SPLITS}")
-    path = os.path.join(base_path, f'data/{config['data']}', split+'.csv')
+    path = os.path.join(base_path, f'data/{config["data"]}', split+'.csv')
     smiles = pd.read_csv(path)['SMILES'].values
     
     return smiles
@@ -35,5 +35,5 @@ def get_dataset(split='train', config=None):
 
 def get_statistics(split='test', config=None):
     base_path = os.path.dirname(__file__)
-    path = os.path.join(base_path, f'data/{config['data']}', split+'_stats.npz')
+    path = os.path.join(base_path, f'data/{config["data"]}', split+'_stats.npz')
     return np.load(path, allow_pickle=True)['stats'].item()
