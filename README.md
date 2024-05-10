@@ -1,7 +1,7 @@
 # NewMoses
 
 
-# Dependency
+## Dependency
 torch <= 1.13
 
 ## Environment setup
@@ -20,3 +20,20 @@ conda activate moses
 pip install -r requirements.txt
 pip install torch==1.12.0+cpu torchvision==0.13.0+cpu torchaudio==0.12.0 --extra-index-url https://download.pytorch.org/whl/cpu
 ```
+
+
+## Training rule
+1. Only train one model on each process b/c of wandb tracking
+2. If you want to train model with selfies format, you add the '--use_selfies 1' when you run the scripts/run.py
+    - if you don't add it, the model is trained by smiles format automatically
+
+
+## Adding the Dataset
+If you train model using your model, add the splited dataset named train.csv, test.csv in moses > dataset > data > {datasetname} > files
+For example, we have already make the directory for ZINC and QM9 dataset
+
+
+## Reference code
+We re-generate the code from https://github.com/molecularsets/moses for our project.
+
+
