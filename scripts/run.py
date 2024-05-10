@@ -81,7 +81,7 @@ def get_parser():
                         help='Path to precalculated scaffold test npz')
     parser.add_argument('--checkpoint_dir', type=str, default='./checkpoints',
                         help='Directory for checkpoints')
-    parser.add_argument('--n_samples', type=int, default=30000,
+    parser.add_argument('--n_samples', type=int, default=30, # 30000
                         help='Number of samples to sample')
     parser.add_argument('--n_jobs', type=int, default=1,
                         help='Number of threads')
@@ -281,7 +281,7 @@ def main(config):
                                      ptest_path, ptest_scaffolds_path,
                                      train_path)
         table = pd.DataFrame([model_metrics]).T
-        if config.nowandb:
+        if not config.nowandb:
             wandb.log({'metrics': table})
         if len(models) == 1:
             metrics_path = ''.join(
