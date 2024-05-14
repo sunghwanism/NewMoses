@@ -14,8 +14,7 @@ class VAETrainer(MosesTrainer):
     def __init__(self, config):
         self.config = config
         self.use_selfies = config.use_selfies
-        print(f'Using SELFIES: {self.use_selfies}')
-
+        
     def get_vocabulary(self, data):
         return OneHotVocab.from_data(data, use_selfies=self.use_selfies)
 
@@ -40,6 +39,7 @@ class VAETrainer(MosesTrainer):
         kl_loss_values = CircularBuffer(self.config.n_last)
         recon_loss_values = CircularBuffer(self.config.n_last)
         loss_values = CircularBuffer(self.config.n_last)
+        
         for input_batch in tqdm_data:
             input_batch = tuple(data.to(model.device) for data in input_batch)
 
@@ -109,6 +109,7 @@ class VAETrainer(MosesTrainer):
             if not self.config.nowandb:
                 wandb.log({f"{postfix['mode']}-{k}": v \
                     for k, v in postfix.items() if k not in ['mode']}) 
+                
             if logger is not None:
                 logger.append(postfix)
                 logger.save(self.config.log_file)
@@ -117,6 +118,7 @@ class VAETrainer(MosesTrainer):
                 tqdm_data = tqdm(val_loader,
                                  desc='Validation (epoch #{})'.format(epoch))
                 postfix = self._train_epoch(model, epoch, tqdm_data, kl_weight)
+                
                 if not self.config.nowandb:
                     wandb.log({f"{postfix['mode']}-{k}": v \
                         for k, v in postfix.items() if k not in ['mode']})

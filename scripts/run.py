@@ -28,25 +28,28 @@ trainer_script = load_module('train', 'train.py')
 sampler_script = load_module('sample', 'sample.py')
 
 
-def get_model_path(config, model):
+def get_model_path(config, model, model_starttime):
     if len(config.experiment_suff) > 0:
-        unique_folder = f'{config.data}_{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        unique_folder = f'{config.data}_{model}_{config.experiment_suff}_{model_starttime}'
     else:
-        unique_folder = f'{config.data}_{model}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        unique_folder = f'{config.data}_{model}_{model_starttime}'
         
     unique_folder_path = os.path.join(config.checkpoint_dir, unique_folder)
+    
     if not os.path.exists(unique_folder_path):
         os.mkdir(unique_folder_path)
+        
+    unique_folder_path = os.path.join(config.checkpoint_dir, config.test_path)
         
     return os.path.join(
         unique_folder_path, model + config.experiment_suff + '_model.pt'
     )
 
-def get_log_path(config, model):
+def get_log_path(config, model, model_starttime):
     if len(config.experiment_suff) > 0:
-        unique_folder = f'{config.data}_{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        unique_folder = f'{config.data}_{model}_{config.experiment_suff}_{model_starttime}'
     else:
-        unique_folder = f'{config.data}_{model}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        unique_folder = f'{config.data}_{model}_{model_starttime}'
     unique_folder_path = os.path.join(config.checkpoint_dir, unique_folder)
     if not os.path.exists(unique_folder_path):
         os.mkdir(unique_folder_path)
@@ -56,11 +59,11 @@ def get_log_path(config, model):
     )
 
 
-def get_config_path(config, model):
+def get_config_path(config, model,model_starttime):
     if len(config.experiment_suff) > 0:
-        unique_folder = f'{config.data}_{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        unique_folder = f'{config.data}_{model}_{config.experiment_suff}_{model_starttime}'
     else:
-        unique_folder = f'{config.data}_{model}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        unique_folder = f'{config.data}_{model}_{model_starttime}'
         
     unique_folder_path = os.path.join(config.checkpoint_dir, unique_folder)
     if not os.path.exists(unique_folder_path):
@@ -71,11 +74,11 @@ def get_config_path(config, model):
     )
 
 
-def get_vocab_path(config, model):
+def get_vocab_path(config, model, model_starttime):
     if len(config.experiment_suff) > 0:
-        unique_folder = f'{config.data}_{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        unique_folder = f'{config.data}_{model}_{config.experiment_suff}_{model_starttime}'
     else:
-        unique_folder = f'{config.data}_{model}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        unique_folder = f'{config.data}_{model}_{model_starttime}'
         
     unique_folder_path = os.path.join(config.checkpoint_dir, unique_folder)
     if not os.path.exists(unique_folder_path):
@@ -86,11 +89,11 @@ def get_vocab_path(config, model):
     )
 
 
-def get_generation_path(config, model):
+def get_generation_path(config, model, model_starttime):
     if len(config.experiment_suff) > 0:
-        unique_folder = f'{config.data}_{model}_{config.experiment_suff}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        unique_folder = f'{config.data}_{model}_{config.experiment_suff}_{model_starttime}'
     else:
-        unique_folder = f'{config.data}_{model}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        unique_folder = f'{config.data}_{model}_{model_starttime}'
         
     unique_folder_path = os.path.join(config.checkpoint_dir, unique_folder)
     if not os.path.exists(unique_folder_path):
@@ -161,12 +164,12 @@ def init_wandb(config):
         config.wandb_url = wandb.run.get_url()
 
 
-def train_model(config, model, train_path, test_path):
+def train_model(config, model, train_path, test_path, model_starttime):
     print('Training...')
-    model_path = get_model_path(config, model)
-    config_path = get_config_path(config, model)
-    vocab_path = get_vocab_path(config, model)
-    log_path = get_log_path(config, model)
+    model_path = get_model_path(config, model, model_starttime)
+    config_path = get_config_path(config, model, model_starttime)
+    vocab_path = get_vocab_path(config, model, model_starttime)
+    log_path = get_log_path(config, model, model_starttime)
 
     if os.path.exists(model_path) and \
             os.path.exists(config_path) and \
@@ -221,11 +224,11 @@ def train_model(config, model, train_path, test_path):
     trainer_script.main(model, whole_config)
 
 
-def sample_from_model(config, model):
+def sample_from_model(config, model, model_starttime):
     print('Sampling...')
-    model_path = get_model_path(config, model)
-    config_path = get_config_path(config, model)
-    vocab_path = get_vocab_path(config, model)
+    model_path = get_model_path(config, model, model_starttime)
+    config_path = get_config_path(config, model, model_starttime)
+    vocab_path = get_vocab_path(config, model, model_starttime)
 
     assert os.path.exists(model_path), (
         "Can't find model path for sampling: '{}'".format(model_path)
@@ -244,7 +247,7 @@ def sample_from_model(config, model):
          '--model_load', model_path,
          '--config_load', config_path,
          '--vocab_load', vocab_path,
-         '--gen_save', get_generation_path(config, model),
+         '--gen_save', get_generation_path(config, model, model_starttime),
          '--n_samples', str(config.n_samples)]
     )[0]
     
@@ -267,11 +270,12 @@ def sample_from_model(config, model):
 
 
 def eval_metrics(config, model, test_path, test_scaffolds_path,
-                 ptest_path, ptest_scaffolds_path, train_path):
+                 ptest_path, ptest_scaffolds_path, train_path, model_starttime):
     print('Computing metrics...')
     eval_parser = eval_script.get_parser()
+    
     args = [
-        '--gen_path', get_generation_path(config, model),
+        '--gen_path', get_generation_path(config, model, model_starttime),
         '--n_jobs', str(config.n_jobs),
         '--device', config.device,
     ]
@@ -310,6 +314,8 @@ def eval_metrics(config, model, test_path, test_scaffolds_path,
 def main(config):
     if not os.path.exists(config.checkpoint_dir):
         os.mkdir(config.checkpoint_dir)
+        
+    model_starttime = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
     train_path = config.train_path
     test_path = config.test_path
@@ -321,14 +327,15 @@ def main(config):
               if config.model == 'all'
               else [config.model])
     for model in models:
-        train_model(config, model, train_path, test_path)
-        sample_from_model(config, model)
+        train_model(config, model, train_path, test_path, model_starttime)
+        sample_from_model(config, model, model_starttime)
 
     for model in models:
         model_metrics = eval_metrics(config, model,
                                      test_path, test_scaffolds_path,
                                      ptest_path, ptest_scaffolds_path,
-                                     train_path)
+                                     train_path,
+                                     model_starttime)
         table = pd.DataFrame([model_metrics]).T
         if not config.nowandb:
             wandb.log({'metrics': table})

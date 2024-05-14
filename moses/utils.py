@@ -29,8 +29,10 @@ class CharVocab:
     def from_data(cls, data, use_selfies=False, *args, **kwargs):
         chars = set()
 
-        print(use_selfies)
         if use_selfies: #selfies data
+            
+            print(f'------- Using SELFIES: {use_selfies} -------')
+
             for string in data:
                 result = re.findall(r'\[([^]]+)\]', string)
                 chars.update(result)

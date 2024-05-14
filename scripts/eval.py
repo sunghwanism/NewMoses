@@ -2,6 +2,9 @@ import argparse
 import numpy as np
 import rdkit
 
+import sys
+sys.path.append('../moses')
+
 from metrics.metrics import get_all_metrics
 from script_utils import read_smiles_csv
 
@@ -15,20 +18,26 @@ def main(config, print_metrics=True):
     ptest = None
     ptest_scaffolds = None
     train = None
+    
     if config.test_path:
         test = read_smiles_csv(config.test_path)
+        
     if config.test_scaffolds_path is not None:
         test_scaffolds = read_smiles_csv(config.test_scaffolds_path)
+        
     if config.train_path is not None:
         train = read_smiles_csv(config.train_path)
+        
     if config.ptest_path is not None:
         ptest = np.load(
             config.ptest_path,
             allow_pickle=True)['stats'].item()
+        
     if config.ptest_scaffolds_path is not None:
         ptest_scaffolds = np.load(
             config.ptest_scaffolds_path,
             allow_pickle=True)['stats'].item()
+        
     gen = read_smiles_csv(config.gen_path)
     metrics = get_all_metrics(gen=gen, k=config.ks, n_jobs=config.n_jobs,
                               device=config.device,
