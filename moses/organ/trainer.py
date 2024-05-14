@@ -14,6 +14,7 @@ import wandb
 
 class PolicyGradientLoss(nn.Module):
     def forward(self, outputs, targets, rewards, lengths):
+        lengths = lengths.cpu().numpy()
         log_probs = F.log_softmax(outputs, dim=2)
         items = torch.gather(
             log_probs, 2, targets.unsqueeze(2)

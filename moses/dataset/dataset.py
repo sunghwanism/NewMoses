@@ -31,7 +31,6 @@ def get_dataset(split='train', config=None):
     path = os.path.join(base_path, f'data/{config.data}', split+'.csv')
     smiles = pd.read_csv(path)['SMILES'].values
 
-    print(f"in data loading : {config.use_selfies}")
     if config.use_selfies:
         selfies = [sf.encoder(smile) for smile in smiles]
         return selfies

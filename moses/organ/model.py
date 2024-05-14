@@ -19,6 +19,7 @@ class Generator(nn.Module):
                                       embedding_layer.num_embeddings)
 
     def forward(self, x, lengths, states=None):
+        lengths = lengths.cpu().numpy()
         x = self.embedding_layer(x)
         x = pack_padded_sequence(x, lengths, batch_first=True)
         x, states = self.lstm_layer(x, states)
