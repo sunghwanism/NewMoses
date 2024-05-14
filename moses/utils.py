@@ -8,6 +8,7 @@ import torch
 from rdkit import rdBase
 from rdkit import Chem
 
+import re
 
 # https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader
 def set_torch_seed_to_all_gens(_):
@@ -25,10 +26,20 @@ class SpecialTokens:
 
 class CharVocab:
     @classmethod
-    def from_data(cls, data, *args, **kwargs):
+    def from_data(cls, data, use_selfies=False, *args, **kwargs):
         chars = set()
-        for string in data:
-            chars.update(string)
+
+        print(use_selfies)
+        if use_selfies: #selfies data
+            for string in data:
+                result = re.findall(r'\[([^]]+)\]', string)
+                chars.update(result)
+            
+        else: #smile data
+            for string in data:
+                chars.update(string)
+        
+        print(chars)
 
         return cls(chars, *args, **kwargs)
 

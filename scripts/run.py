@@ -181,7 +181,11 @@ def train_model(config, model, train_path, test_path):
         '--config_save', config_path,
         '--vocab_save', vocab_path,
         '--log_file', log_path,
-        '--n_jobs', str(config.n_jobs)
+        '--n_jobs', str(config.n_jobs),
+        '--data', config.data,
+
+        # SELFIES로 할지말지 결정하는 argument 추가
+        '--use_selfies', str(config.use_selfies)
     ]
         
     if train_path is not None:
