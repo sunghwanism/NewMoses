@@ -13,9 +13,11 @@ import wandb
 class VAETrainer(MosesTrainer):
     def __init__(self, config):
         self.config = config
+        self.use_selfies = config.use_selfies
+        print(f'Using SELFIES: {self.use_selfies}')
 
     def get_vocabulary(self, data):
-        return OneHotVocab.from_data(data)
+        return OneHotVocab.from_data(data, use_selfies=self.use_selfies)
 
     def get_collate_fn(self, model):
         device = self.get_collate_device(model)
