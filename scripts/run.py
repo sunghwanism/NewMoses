@@ -39,7 +39,7 @@ def get_model_path(config, model, model_starttime):
     if not os.path.exists(unique_folder_path):
         os.mkdir(unique_folder_path)
         
-    unique_folder_path = os.path.join(config.checkpoint_dir, config.test_path)
+    # unique_folder_path = os.path.join(config.checkpoint_dir, config.test_path)
         
     return os.path.join(
         unique_folder_path, model + config.experiment_suff + '_model.pt'
