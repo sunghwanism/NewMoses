@@ -112,7 +112,7 @@ def get_parser():
                         help='Path to precalculated scaffold test npz')
     parser.add_argument('--checkpoint_dir', type=str, default='./checkpoints',
                         help='Directory for checkpoints')
-    parser.add_argument('--n_samples', type=int, default=100,
+    parser.add_argument('--n_samples', type=int, default=30000,
                         help='Number of samples to sample')
     parser.add_argument('--n_jobs', type=int, default=4,
                         help='Number of threads')

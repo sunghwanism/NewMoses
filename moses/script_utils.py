@@ -98,9 +98,18 @@ def add_sample_args(parser):
 
 
 def read_smiles_csv(path):
-    return pd.read_csv(path,
-                       usecols=['SMILES'],
-                       squeeze=True).astype(str).tolist()
+    
+    df = pd.read_csv(path, usecols=['SMILES'])
+    smiles_list = df['SMILES'].astype(str).tolist()
+    
+    return smiles_list
+
+def read_selfies_csv(path):
+        
+    df = pd.read_csv(path, usecols=['SELFIES'])
+    selfies_list = df['SELFIES'].astype(str).tolist()
+    
+    return selfies_list
 
 
 def set_seed(seed):

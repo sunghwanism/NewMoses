@@ -65,14 +65,16 @@ def get_all_metrics(gen, k=None, n_jobs=1,
                 "statistics for default test set")
         test = get_dataset('test')
         ptest = get_statistics('test')
-
-    if test_scaffolds is None:
-        if ptest_scaffolds is not None:
-            raise ValueError(
-                "You cannot specify custom scaffold test "
-                "statistics for default scaffold test set")
-        test_scaffolds = get_dataset('test_scaffolds')
-        ptest_scaffolds = get_statistics('test_scaffolds')
+        
+    # To-do List: we do not have the following datasets
+    
+    # if test_scaffolds is None:
+    #     if ptest_scaffolds is not None:
+    #         raise ValueError(
+    #             "You cannot specify custom scaffold test "
+    #             "statistics for default scaffold test set")
+    #     test_scaffolds = get_dataset('test_scaffolds')
+    #     ptest_scaffolds = get_statistics('test_scaffolds')
 
     train = train or get_dataset('train')
 
@@ -108,10 +110,16 @@ def get_all_metrics(gen, k=None, n_jobs=1,
     mols = mapper(pool)(get_mol, gen)
     kwargs = {'n_jobs': pool, 'device': device, 'batch_size': batch_size}
     kwargs_fcd = {'n_jobs': n_jobs, 'device': device, 'batch_size': batch_size}
+    
     metrics['FCD/Test'] = FCDMetric(**kwargs_fcd)(gen=gen, pref=ptest['FCD'])
+    print("-------------------- [Finish FCD/Test] --------------------")
     metrics['SNN/Test'] = SNNMetric(**kwargs)(gen=mols, pref=ptest['SNN'])
+    print("-------------------- [Finish SNN/Test] --------------------")
     metrics['Frag/Test'] = FragMetric(**kwargs)(gen=mols, pref=ptest['Frag'])
+    print("-------------------- [Finish Frag/Test] --------------------")
     metrics['Scaf/Test'] = ScafMetric(**kwargs)(gen=mols, pref=ptest['Scaf'])
+    print("-------------------- [Finish Scaf/Test] --------------------")
+    
     if ptest_scaffolds is not None:
         metrics['FCD/TestSF'] = FCDMetric(**kwargs_fcd)(
             gen=gen, pref=ptest_scaffolds['FCD']
@@ -127,22 +135,27 @@ def get_all_metrics(gen, k=None, n_jobs=1,
         )
 
     metrics['IntDiv'] = internal_diversity(mols, pool, device=device)
+    print("-------------------- [Finish IntDiv] --------------------")
     metrics['IntDiv2'] = internal_diversity(mols, pool, device=device, p=2)
+    print("-------------------- [Finish IntDiv2] --------------------")
     metrics['Filters'] = fraction_passes_filters(mols, pool)
+    print("-------------------- [Finish Filters] --------------------")
 
     # Properties
     for name, func in [('logP', logP), ('SA', SA),
                        ('QED', QED),
                        ('weight', weight)]:
-        metrics[name] = WassersteinMetric(func, **kwargs)(
-            gen=mols, pref=ptest[name])
+        metrics[name] = WassersteinMetric(func, **kwargs)(gen=mols, pref=ptest[name])
 
     if train is not None:
         metrics['Novelty'] = novelty(mols, train, pool)
+        
     enable_rdkit_log()
+    
     if close_pool:
         pool.close()
         pool.join()
+        
     return metrics
 
 

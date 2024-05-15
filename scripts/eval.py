@@ -6,7 +6,7 @@ import sys
 sys.path.append('../moses')
 
 from metrics.metrics import get_all_metrics
-from script_utils import read_smiles_csv
+from script_utils import read_smiles_csv, read_selfies_csv
 
 lg = rdkit.RDLogger.logger()
 lg.setLevel(rdkit.RDLogger.CRITICAL)
@@ -20,13 +20,23 @@ def main(config, print_metrics=True):
     train = None
     
     if config.test_path:
-        test = read_smiles_csv(config.test_path)
+        if config.use_selfies:
+            test = read_selfies_csv(config.test_path)
+            
+        else:
+            test = read_smiles_csv(config.test_path)
         
     if config.test_scaffolds_path is not None:
-        test_scaffolds = read_smiles_csv(config.test_scaffolds_path)
+        if config.use_selfies:
+            test_scaffolds = read_selfies_csv(config.test_scaffolds_path)
+        else:
+            test_scaffolds = read_smiles_csv(config.test_scaffolds_path)
         
     if config.train_path is not None:
-        train = read_smiles_csv(config.train_path)
+        if config.use_selfies:
+            train = read_selfies_csv(config.train_path)
+        else:
+            train = read_smiles_csv(config.train_path)
         
     if config.ptest_path is not None:
         ptest = np.load(
@@ -38,7 +48,11 @@ def main(config, print_metrics=True):
             config.ptest_scaffolds_path,
             allow_pickle=True)['stats'].item()
         
-    gen = read_smiles_csv(config.gen_path)
+    if config.use_selfies:
+        gen = read_selfies_csv(config.gen_path)
+    else:
+        gen = read_smiles_csv(config.gen_path)
+    
     metrics = get_all_metrics(gen=gen, k=config.ks, n_jobs=config.n_jobs,
                               device=config.device,
                               test_scaffolds=test_scaffolds,
@@ -48,6 +62,7 @@ def main(config, print_metrics=True):
     if print_metrics:
         for name, value in metrics.items():
             print('{},{}'.format(name, value))
+            
     else:
         return metrics
 
@@ -84,7 +99,7 @@ def get_parser():
     parser.add_argument('--device',
                         type=str, default='cpu',
                         help='GPU device id (`cpu` or `cuda:n`)')
-
+    
     return parser
 
 
