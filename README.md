@@ -58,6 +58,13 @@ For example, we have already make the directory for ZINC and QM9 dataset
 python scripts/run_samples.py --model_save_time 20240515_021753 --model vae --data ZINC --load_epoch 080 --n_samples 1000
 ```
 
+## Evaluation
+- device: choose cpu or cuda:{index}
+- n_jobs: How many workers for evaluating the models
+```sh
+python scripts/run_eval.py --data ZINC --model vae --model_save_time 20240515_021753 --device cpu --n_jobs 8
+```
+
 
 ## Reference code
 We re-generate the code from https://github.com/molecularsets/moses for our project.
