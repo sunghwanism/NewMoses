@@ -32,13 +32,14 @@ pip install torch==1.12.0+cpu torchvision==0.13.0+cpu torchaudio==0.12.0 --extra
     - if you don't add it, the model is trained by smiles format automatically
     - (!!Caution!!) if you use --use_selfies with any kind of format (ex: 0,1, ..., True, False...), the model is trained by selfies
 
-Example
+Example:
 
 ```sh
 python scripts/run.py --device cuda:0 —model vae --use_selfies 1 --n_batch 2048
 ```
 
-For use the wandb, you need to setup below file
+For use the wandb, you need to setup below file:
+
 ```sh
 python scripts/run.py --device cuda:0 —model vae --use_selfies 1 --n_batch 2048 --wandb_entity {wandb_id} --wandb_project {project_name} --nowandb 0
 ```
@@ -46,6 +47,16 @@ python scripts/run.py --device cuda:0 —model vae --use_selfies 1 --n_batch 204
 ## Adding the Dataset
 If you train model using your model, add the splited dataset named train.csv, test.csv in moses > dataset > data > {datasetname} > files
 For example, we have already make the directory for ZINC and QM9 dataset
+
+
+## Sampling (Generate Sample using trained model)
+- n_samples: how many samples do you want to generate
+- model_save_time: the time of the model folder
+- load_epoch: what epoch do you want to use 
+
+```sh
+python scripts/run_samples.py --model_save_time 20240515_021753 --model vae --data ZINC --load_epoch 080 --n_samples 1000
+```
 
 
 ## Reference code

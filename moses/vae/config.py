@@ -86,8 +86,5 @@ def get_parser(parser=None):
                            type=int, default=1,
                            help='Number of workers for DataLoaders')
     
-    # SELFIES로 할지말지 결정하는 argument 추가
-    train_arg.add_argument('--use_selfies', default=False,
-                           help='Whether to use SELFIES or SMILES')
 
     return parser
