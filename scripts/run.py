@@ -39,8 +39,6 @@ def get_model_path(config, model, model_starttime):
     if not os.path.exists(unique_folder_path):
         os.mkdir(unique_folder_path)
         
-    # unique_folder_path = os.path.join(config.checkpoint_dir, config.test_path)
-        
     return os.path.join(
         unique_folder_path, model + config.experiment_suff + '_model.pt'
     )
@@ -186,9 +184,6 @@ def train_model(config, model, train_path, test_path, model_starttime):
         '--log_file', log_path,
         '--n_jobs', str(config.n_jobs),
         '--data', config.data,
-
-        # SELFIES로 할지말지 결정하는 argument 추가
-        '--use_selfies', str(config.use_selfies)
     ]
         
     if train_path is not None:
