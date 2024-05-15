@@ -198,11 +198,30 @@ class VAE(nn.Module):
             w = torch.tensor(self.bos, device=self.device).repeat(n_batch)
             x = torch.tensor([self.pad], device=self.device).repeat(n_batch,
                                                                     max_len)
+            # x[:, 0] = self.bos
+            # end_pads = torch.tensor([max_len], device=self.device).repeat(
+            #     n_batch)
+            # eos_mask = torch.zeros(n_batch, dtype=torch.uint8,
+            #                        device=self.device)
+
+            # # Generating cycle
+            # for i in range(1, max_len):
+            #     x_emb = self.x_emb(w).unsqueeze(1)
+            #     x_input = torch.cat([x_emb, z_0], dim=-1)
+
+            #     o, h = self.decoder_rnn(x_input, h)
+            #     y = self.decoder_fc(o.squeeze(1))
+            #     y = F.softmax(y / temp, dim=-1)
+
+            #     w = torch.multinomial(y, 1)[:, 0]
+            #     x[~eos_mask, i] = w[~eos_mask]
+            #     i_eos_mask = ~eos_mask & (w == self.eos)
+            #     end_pads[i_eos_mask] = i + 1
+            #     eos_mask = eos_mask | i_eos_mask
+            
             x[:, 0] = self.bos
-            end_pads = torch.tensor([max_len], device=self.device).repeat(
-                n_batch)
-            eos_mask = torch.zeros(n_batch, dtype=torch.uint8,
-                                   device=self.device)
+            end_pads = torch.tensor([max_len], device=self.device).repeat(n_batch)
+            eos_mask = torch.zeros(n_batch, dtype=torch.bool, device=self.device)
 
             # Generating cycle
             for i in range(1, max_len):
@@ -216,7 +235,7 @@ class VAE(nn.Module):
                 w = torch.multinomial(y, 1)[:, 0]
                 x[~eos_mask, i] = w[~eos_mask]
                 i_eos_mask = ~eos_mask & (w == self.eos)
-                end_pads[i_eos_mask] = i + 1
+                end_pads.masked_fill_(i_eos_mask, i + 1)
                 eos_mask = eos_mask | i_eos_mask
 
             # Converting `x` to list of tensors

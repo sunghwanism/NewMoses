@@ -20,8 +20,9 @@ _base_dir = os.path.split(__file__)[0]
 _mcf = pd.read_csv(os.path.join(_base_dir, 'mcf.csv'))
 _pains = pd.read_csv(os.path.join(_base_dir, 'wehi_pains.csv'),
                      names=['smarts', 'names'])
-_filters = [Chem.MolFromSmarts(x) for x in
-            _mcf.append(_pains, sort=True)['smarts'].values]
+
+_combined = pd.concat([_mcf, _pains], ignore_index=True, sort=True)
+_filters = [Chem.MolFromSmarts(x) for x in _combined['smarts'].values]
 
 
 def canonic_smiles(smiles_or_mol):
