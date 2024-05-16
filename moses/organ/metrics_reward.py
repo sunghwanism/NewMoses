@@ -2,11 +2,11 @@ import random
 from collections import Counter
 import numpy as np
 
-from metrics import remove_invalid, \
+from moses.metrics import remove_invalid, \
                           fraction_passes_filters, internal_diversity, \
                           FCDMetric, SNNMetric, FragMetric, ScafMetric, \
                           WassersteinMetric, logP, QED, SA, weight
-from utils import mapper, get_mol
+from moses.utils import mapper, get_mol
 
 
 class MetricsReward:

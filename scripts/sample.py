@@ -1,12 +1,14 @@
 import argparse
+import os
 import sys
 import torch
 import rdkit
 import pandas as pd
 import wandb
 from tqdm.auto import tqdm
-from models_storage import ModelsStorage
-from script_utils import add_sample_args, set_seed
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from moses.models_storage import ModelsStorage
+from moses.script_utils import add_sample_args, set_seed
 
 lg = rdkit.RDLogger.logger()
 lg.setLevel(rdkit.RDLogger.CRITICAL)

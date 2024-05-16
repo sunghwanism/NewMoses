@@ -3,7 +3,7 @@ import argparse
 import pandas as pd
 import numpy as np
 
-from metrics import compute_intermediate_statistics
+from moses.metrics import compute_intermediate_statistics
 
 
 def str2bool(v):

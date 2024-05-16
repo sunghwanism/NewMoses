@@ -6,8 +6,8 @@ import torch.nn.functional as F
 from tqdm.auto import tqdm
 from torch.nn.utils.rnn import pad_sequence
 
-from interfaces import MosesTrainer
-from utils import CharVocab, Logger
+from moses.interfaces import MosesTrainer
+from moses.utils import CharVocab, Logger
 
 import wandb
 
