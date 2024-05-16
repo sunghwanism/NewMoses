@@ -1,12 +1,12 @@
 import os
 import argparse
 import sys
-sys.path.append("./moses")
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) 
 
 import importlib.util
 import pandas as pd
 
-from models_storage import ModelsStorage
+from moses.models_storage import ModelsStorage
 
 
 def load_module(name, path):

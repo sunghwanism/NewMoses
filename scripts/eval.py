@@ -2,11 +2,12 @@ import argparse
 import numpy as np
 import rdkit
 
+import os
 import sys
-sys.path.append('../moses')
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) 
 
-from metrics.metrics import get_all_metrics
-from script_utils import read_smiles_csv, read_selfies_csv
+from moses.metrics.metrics import get_all_metrics
+from moses.script_utils import read_smiles_csv, read_selfies_csv
 
 lg = rdkit.RDLogger.logger()
 lg.setLevel(rdkit.RDLogger.CRITICAL)

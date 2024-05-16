@@ -1,15 +1,15 @@
 import os
 import argparse
 import sys
-sys.path.append("./moses")
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) 
 import datetime
 
 import importlib.util
 import pandas as pd
 import torch
 
-from models_storage import ModelsStorage
-from vae import VAE
+from moses.models_storage import ModelsStorage
+from moses.vae import VAE
 
 
 def load_module(name, path):
