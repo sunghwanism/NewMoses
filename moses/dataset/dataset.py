@@ -29,13 +29,13 @@ def get_dataset(split='train', config=None):
             f"Unknown split {split}. "
             f"Available splits: {AVAILABLE_SPLITS}")
     path = os.path.join(base_path, f'data/{config.data}', split+'.csv')
-    smiles = pd.read_csv(path)['SMILES'].values
 
     if config.use_selfies:
-        selfies = [sf.encoder(smile) for smile in smiles]
+        selfies = pd.read_csv(path)['SELFIES'].values
         return selfies
 
     else:
+        smiles = pd.read_csv(path)['SMILES'].values
         return smiles
 
 
