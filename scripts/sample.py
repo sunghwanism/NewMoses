@@ -54,7 +54,11 @@ def main(model, config):
             n -= len(current_samples)
             T.update(len(current_samples))
 
-    samples = pd.DataFrame(samples, columns=['SMILES'])
+    if config.use_selfies:
+        samples = pd.DataFrame(samples, columns=['SELFIES'])
+    else:
+        samples = pd.DataFrame(samples, columns=['SMILES'])
+        
     if not config.nowandb:
         wandb.log({'samples': samples})
     samples.to_csv(config.gen_save, index=False)
