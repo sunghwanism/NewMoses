@@ -5,7 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import torch
 import rdkit
 
-from moses.script_utils import add_train_args, read_smiles_csv, set_seed
+from moses.script_utils import add_train_args, read_smiles_csv, read_selfies_csv, set_seed
 from moses.models_storage import ModelsStorage
 from moses.dataset import get_dataset
 
@@ -42,11 +42,17 @@ def main(model, config):
     if config.train_load is None:
         train_data = get_dataset('train', config)
     else:
-        train_data = read_smiles_csv(config.train_load)
+        if config.use_selfies:
+            train_data = read_selfies_csv(config.train_load)
+        else:
+            train_data = read_smiles_csv(config.train_load)
     if config.val_load is None:
         val_data = get_dataset('test', config)
     else:
-        val_data = read_smiles_csv(config.val_load)
+        if config.use_selfies:
+            val_data = read_selfies_csv(config.val_load)
+        else:
+            val_data = read_smiles_csv(config.val_load)
     trainer = MODELS.get_model_trainer(model)(config)
 
     if config.vocab_load is not None:
@@ -70,7 +76,6 @@ def main(model, config):
     model = model.to('cpu')
     torch.save(model.state_dict(), config.model_save)
 
-#TODO : script에서 실행할 때, use_selfies를 False로 해도 왜 자꾸 selfies로 변환이 되어서 사용되지?
 
 if __name__ == '__main__':
     parser = get_parser()
