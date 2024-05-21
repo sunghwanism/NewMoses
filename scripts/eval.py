@@ -1,7 +1,7 @@
 import argparse
 import numpy as np
 import rdkit
-
+import wandb
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) 
@@ -59,7 +59,8 @@ def main(config, print_metrics=True):
                               test_scaffolds=test_scaffolds,
                               ptest=ptest, ptest_scaffolds=ptest_scaffolds,
                               test=test, train=train, config=config)
-
+    if not config.nowandb:
+        wandb.log({'metrics': metrics})
     if print_metrics:
         for name, value in metrics.items():
             print('{},{}'.format(name, value))
