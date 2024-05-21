@@ -142,8 +142,8 @@ def get_parser():
                         help='Experiment suffix to break ambiguity')
     parser.add_argument('--data', default='ZINC', 
                         help='Dataset to use')
-    parser.add_argument('--use_selfies', default=False,
-                        help='Use selfies format')
+    parser.add_argument('--use_selfies', type=int, default=0,
+                        choices=[0, 1], help='Use selfies format')
     
     parser.add_argument('--wandb_entity', type=str,
                         help='Wandb entity name')
@@ -333,7 +333,7 @@ def main(config):
                                      model_starttime)
         table = pd.DataFrame([model_metrics]).T
         if not config.nowandb:
-            wandb.log({'metrics': table})
+            wandb.log({'metrics': table.T})
         if len(models) == 1:
             metrics_path = ''.join(
                 os.path.splitext(config.metrics)[:-1])+f'_{model}.csv'
