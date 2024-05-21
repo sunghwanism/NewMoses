@@ -140,8 +140,8 @@ def get_parser():
                         help='Size of testing dataset')
     parser.add_argument('--experiment_suff', type=str, default='',
                         help='Experiment suffix to break ambiguity')
-    parser.add_argument('--data', default='ZINC', 
-                        help='Dataset to use')
+    parser.add_argument('--data', type=str, default='ZINC', 
+                        choices=['ZINC', 'QM9'], help='Dataset to use')
     parser.add_argument('--use_selfies', type=int, default=0,
                         choices=[0, 1], help='Use selfies format')
     
