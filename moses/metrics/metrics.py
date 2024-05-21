@@ -18,7 +18,7 @@ def get_all_metrics(gen, k=None, n_jobs=1,
                     device='cpu', batch_size=512, pool=None,
                     test=None, test_scaffolds=None,
                     ptest=None, ptest_scaffolds=None,
-                    train=None):
+                    train=None, config=None):
     """
     Computes all available metrics between test (scaffold test)
     and generated sets of SMILES.
@@ -44,6 +44,7 @@ def get_all_metrics(gen, k=None, n_jobs=1,
             statistics will be ignored
         train (None or list): train SMILES. If None, will load a default
             train set
+        config (None or Config): configuration object. If None, not used
     Available metrics:
         * %valid
         * %unique@k
@@ -63,8 +64,8 @@ def get_all_metrics(gen, k=None, n_jobs=1,
             raise ValueError(
                 "You cannot specify custom test "
                 "statistics for default test set")
-        test = get_dataset('test')
-        ptest = get_statistics('test')
+        test = get_dataset('test', config)
+        ptest = get_statistics('test', config)
         
     # To-do List: we do not have the following datasets
     
@@ -76,7 +77,7 @@ def get_all_metrics(gen, k=None, n_jobs=1,
     #     test_scaffolds = get_dataset('test_scaffolds')
     #     ptest_scaffolds = get_statistics('test_scaffolds')
 
-    train = train or get_dataset('train')
+    train = train or get_dataset('train', config)
 
     if k is None:
         k = [1000, 10000]

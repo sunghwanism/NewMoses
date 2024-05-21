@@ -58,7 +58,7 @@ def main(config, print_metrics=True):
                               device=config.device,
                               test_scaffolds=test_scaffolds,
                               ptest=ptest, ptest_scaffolds=ptest_scaffolds,
-                              test=test, train=train)
+                              test=test, train=train, config=config)
 
     if print_metrics:
         for name, value in metrics.items():

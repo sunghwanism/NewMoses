@@ -195,7 +195,7 @@ def main(config):
     train_path = f"moses/dataset/data/{config.data}/train.csv"
     test_path = f"moses/dataset/data/{config.data}/test.csv"
     test_scaffolds_path = None
-    ptest_path = config.ptest_path
+    ptest_path = f"moses/dataset/data/{config.data}/test_stats.npz"
     ptest_scaffolds_path = config.ptest_scaffolds_path
     
     model_metrics = eval_metrics(config, model, test_path, test_scaffolds_path,
