@@ -5,7 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import torch
 import rdkit
 
-from moses.script_utils import add_train_args, read_smiles_csv, read_selfies_csv, set_seed
+from moses.script_utils import add_train_args, read_data_csv, set_seed
 from moses.models_storage import ModelsStorage
 from moses.dataset import get_dataset
 
@@ -42,17 +42,12 @@ def main(model, config):
     if config.train_load is None:
         train_data = get_dataset('train', config)
     else:
-        if config.use_selfies:
-            train_data = read_selfies_csv(config.train_load)
-        else:
-            train_data = read_smiles_csv(config.train_load)
+        train_data = read_data_csv(config.train_load, config)
     if config.val_load is None:
         val_data = get_dataset('test', config)
     else:
-        if config.use_selfies:
-            val_data = read_selfies_csv(config.val_load)
-        else:
-            val_data = read_smiles_csv(config.val_load)
+        val_data = read_data_csv(config.val_load, config)
+
     trainer = MODELS.get_model_trainer(model)(config)
 
     if config.vocab_load is not None:
@@ -60,7 +55,7 @@ def main(model, config):
             'vocab_load path does not exist!'
         vocab = torch.load(config.vocab_load)
     else:
-        vocab = trainer.get_vocabulary(train_data )
+        vocab = trainer.get_vocabulary(train_data)
 
     print(f'Vocabulary size: {len(vocab)}')
 
