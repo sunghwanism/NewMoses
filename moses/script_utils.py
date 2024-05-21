@@ -97,6 +97,17 @@ def add_sample_args(parser):
     return parser
 
 
+def read_data_csv(path, config):
+    
+    if hasattr(config, 'reg_prop_tasks'):
+        df = pd.read_csv(path)
+        cols = ['logP', 'qed', 'SAS']
+        cols.insert(0, 'SELFIES' if config.use_selfies else 'SMILES')
+        data = df[cols].values
+        return data
+    
+    return read_smiles_csv(path) if config.use_selfies else read_selfies_csv(path)
+
 def read_smiles_csv(path):
     
     df = pd.read_csv(path, usecols=['SMILES'])

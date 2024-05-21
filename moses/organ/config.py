@@ -66,7 +66,7 @@ def get_parser(parser=None):
                            help='Number of threads')
     train_arg.add_argument('--data', 
                            type=str, default='ZINC', 
-                           help='Dataset to use')
+                           choices=['ZINC', 'QM9'], help='Dataset to use')
     train_arg.add_argument('--n_workers', type=int, default=1,
                            help='Number of workers for DataLoaders')
     train_arg.add_argument('--max_length', type=int, default=100,

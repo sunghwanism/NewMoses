@@ -60,7 +60,9 @@ def main(config, print_metrics=True):
                               ptest=ptest, ptest_scaffolds=ptest_scaffolds,
                               test=test, train=train, config=config)
     if not config.nowandb:
-        wandb.log({'metrics': metrics})
+        wandb.log({
+            name: value for name, value in metrics.items()
+            })
     if print_metrics:
         for name, value in metrics.items():
             print('{},{}'.format(name, value))

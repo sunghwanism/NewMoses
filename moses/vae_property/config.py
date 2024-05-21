@@ -37,9 +37,24 @@ def get_parser(parser=None):
     model_arg.add_argument('--d_d_h',
                            type=int, default=512,
                            help='Decoder hidden dimensionality')
+    model_arg.add_argument('--p_d_h',
+                            type=int, default=67,
+                            help='Property predictor hidden dimensionality')
+    model_arg.add_argument('--p_n_layers',
+                           type=int, default=3,
+                           help='Property predictor number of layers')
+    model_arg.add_argument('--p_growth_factor',
+                           type=float, default=0.99,
+                           help='Ratio between consecutive layer in Property predictor')
+    model_arg.add_argument('--p_dropout',
+                            type=float, default=0,
+                            help='Property predictor layers dropout')
     model_arg.add_argument('--freeze_embeddings',
                            default=False, action='store_true',
                            help='If to freeze embeddings while training')
+    model_arg.add_argument('--reg_prop_tasks', 
+                           type=int, default=3,
+                           help='If to use property predictor')
 
     # Train
     train_arg = parser.add_argument_group('Train')
@@ -58,6 +73,9 @@ def get_parser(parser=None):
     train_arg.add_argument('--kl_w_end',
                            type=float, default=0.05,
                            help='Maximum kl weight value')
+    train_arg.add_argument('--prop_loss_w',
+                           type=float, default=0.5,
+                           help='Property predictor loss weight')
     train_arg.add_argument('--lr_start',
                            type=float, default=3 * 1e-4,
                            help='Initial lr value')
