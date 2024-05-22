@@ -151,6 +151,8 @@ def get_parser():
                         help='Wandb project name')
     parser.add_argument('--nowandb', type=int, default=0,
                         choices=[0, 1], help='Disable wandb')
+    parser.add_argument('--debug_mode', type=int, default=0,
+                        choices=[0, 1], help='Debug mode')
     
     return parser
 
@@ -312,6 +314,7 @@ def main(config):
         
     model_starttime = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
+    config.nowandb = 1 if config.debug_mode else config.nowandb
     train_path = config.train_path
     test_path = config.test_path
     test_scaffolds_path = config.test_scaffolds_path

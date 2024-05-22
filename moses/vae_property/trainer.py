@@ -92,6 +92,9 @@ class VAEPROPERTYTrainer(MosesTrainer):
                        f'prop={prop_loss_value:.5f})',
                        f'klw={kl_weight:.5f} propw={self.config.prop_loss_w:.5f} lr={lr:.5f}']
             tqdm_data.set_postfix_str(' '.join(postfix))
+            # debug mode to run code faster
+            if self.config.debug_mode and tqdm_data.n > 3:
+                break
 
         postfix = {
             'epoch': epoch,
