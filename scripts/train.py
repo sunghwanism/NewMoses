@@ -55,7 +55,7 @@ def main(model, config):
             'vocab_load path does not exist!'
         vocab = torch.load(config.vocab_load)
     else:
-        vocab = trainer.get_vocabulary(train_data)
+        vocab = trainer.get_vocabulary(train_data, config)
 
     print(f'Vocabulary size: {len(vocab)}')
 
