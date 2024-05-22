@@ -43,6 +43,9 @@ class CharRNNTrainer(MosesTrainer):
             postfix['running_loss'] += (loss.item() -
                                         postfix['running_loss']) / (i + 1)
             tqdm_data.set_postfix(postfix)
+            # debug mode to run code faster
+            if self.config.debug_mode and tqdm_data.n > 3:
+                break
 
         postfix['mode'] = 'Eval' if optimizer is None else 'Train'
         return postfix

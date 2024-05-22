@@ -83,6 +83,9 @@ class LatentGANTrainer(MosesTrainer):
 
             postfix['discriminator_loss'] = np.mean(disc_loss_batch)
             tqdm_data.set_postfix(postfix)
+            # debug mode to run code faster
+            if self.config.debug_mode and tqdm_data.n > 3:
+                break
         postfix['mode'] = 'Eval' if optimizer_disc is None else 'Train'
         return postfix
 

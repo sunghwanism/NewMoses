@@ -132,6 +132,8 @@ def get_parser():
                         help='Wandb project name')
     parser.add_argument('--nowandb', type=int, default=1,
                         choices=[0, 1], help='Disable wandb')
+    parser.add_argument('--debug_mode', type=int, default=0,
+                        choices=[0, 1], help='Debug mode')
     
     
     parser.add_argument('--model_save_time', type=str,
