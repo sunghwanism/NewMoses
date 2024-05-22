@@ -26,7 +26,7 @@ class MosesTrainer(ABC):
         return None
 
     @abstractmethod
-    def get_vocabulary(self, data):
+    def get_vocabulary(self, data, config=None):
         pass
 
     @abstractmethod

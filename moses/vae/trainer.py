@@ -5,7 +5,7 @@ from tqdm.auto import tqdm
 from torch.nn.utils import clip_grad_norm_
 
 from moses.interfaces import MosesTrainer
-from moses.utils import OneHotVocab, Logger, CircularBuffer
+from moses.utils import OneHotVocab, SELFIESVocab, Logger, CircularBuffer
 from moses.vae.misc import CosineAnnealingLRWithRestart, KLAnnealer
 
 import wandb
@@ -15,8 +15,11 @@ class VAETrainer(MosesTrainer):
         self.config = config
         self.use_selfies = config.use_selfies
         
-    def get_vocabulary(self, data):
-        return OneHotVocab.from_data(data, use_selfies=self.use_selfies)
+    def get_vocabulary(self, data, config):
+        if config.use_selfies:
+            return SELFIESVocab.from_data(data, use_selfies=True)
+        else:
+            return OneHotVocab.from_data(data, use_selfies=False)
 
     def get_collate_fn(self, model):
         device = self.get_collate_device(model)
