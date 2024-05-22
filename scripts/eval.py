@@ -1,7 +1,10 @@
 import argparse
 import numpy as np
 import rdkit
+import selfies as sf
+from tqdm import tqdm
 import wandb
+
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) 
@@ -21,36 +24,23 @@ def main(config, print_metrics=True):
     train = None
     
     if config.test_path:
-        if config.use_selfies:
-            test = read_selfies_csv(config.test_path)
-            
-        else:
-            test = read_smiles_csv(config.test_path)
-        
+        test = read_smiles_csv(config.test_path)
     if config.test_scaffolds_path is not None:
-        if config.use_selfies:
-            test_scaffolds = read_selfies_csv(config.test_scaffolds_path)
-        else:
-            test_scaffolds = read_smiles_csv(config.test_scaffolds_path)
-        
+        test_scaffolds = read_smiles_csv(config.test_scaffolds_path)
     if config.train_path is not None:
-        if config.use_selfies:
-            train = read_selfies_csv(config.train_path)
-        else:
-            train = read_smiles_csv(config.train_path)
-        
+        train = read_selfies_csv(config.train_path)        
     if config.ptest_path is not None:
         ptest = np.load(
             config.ptest_path,
             allow_pickle=True)['stats'].item()
-        
     if config.ptest_scaffolds_path is not None:
         ptest_scaffolds = np.load(
             config.ptest_scaffolds_path,
             allow_pickle=True)['stats'].item()
         
     if config.use_selfies:
-        gen = read_selfies_csv(config.gen_path)
+        gen_selfies = read_selfies_csv(config.gen_path)
+        gen = [sf.decoder(x) for x in tqdm(gen_selfies, desc="Decoding Selfies")]
     else:
         gen = read_smiles_csv(config.gen_path)
     
