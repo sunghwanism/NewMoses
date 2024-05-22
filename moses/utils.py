@@ -116,6 +116,42 @@ class OneHotVocab(CharVocab):
         self.vectors = torch.eye(len(self.c2i))
 
 
+class SELFIESVocab(CharVocab):
+    def __init__(self, *args, **kwargs):
+        super(SELFIESVocab, self).__init__(*args, **kwargs)
+        self.vectors = torch.eye(len(self.c2i))
+    
+    def prep_selfies(self, string):
+        filtered_string = re.findall(r'\[([^]]+)\]', string)
+        return filtered_string
+    
+    def post_selfies(self, string):
+        selfies_string = ['[' + char + ']' for char in string]
+        return ''.join(selfies_string)
+        
+    def string2ids(self, string, add_bos=False, add_eos=False):
+        ids = [self.char2id(c) for c in self.prep_selfies(string)]
+
+        if add_bos:
+            ids = [self.bos] + ids
+        if add_eos:
+            ids = ids + [self.eos]
+
+        return ids
+    
+    def ids2string(self, ids, rem_bos=True, rem_eos=True):
+        if len(ids) == 0:
+            return ''
+        if rem_bos and ids[0] == self.bos:
+            ids = ids[1:]
+        if rem_eos and ids[-1] == self.eos:
+            ids = ids[:-1]
+
+        string = self.post_selfies([self.id2char(id) for id in ids])
+
+        return string
+
+
 def mapper(n_jobs):
     '''
     Returns function for map call.

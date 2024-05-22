@@ -6,7 +6,7 @@ from tqdm.auto import tqdm
 from torch.nn.utils.rnn import pad_sequence
 
 from moses.interfaces import MosesTrainer
-from moses.utils import CharVocab, Logger
+from moses.utils import CharVocab, SELFIESVocab, Logger
 
 import wandb
 
@@ -92,8 +92,11 @@ class CharRNNTrainer(MosesTrainer):
                 )
                 model = model.to(device)
 
-    def get_vocabulary(self, data):
-        return CharVocab.from_data(data)
+    def get_vocabulary(self, data, config):
+        if config.use_selfies:
+            return SELFIESVocab.from_data(data, use_selfies=True)
+        else:
+            return CharVocab.from_data(data, use_selfies=False) 
 
     def get_collate_fn(self, model):
         device = self.get_collate_device(model)
