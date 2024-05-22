@@ -1,5 +1,6 @@
 import argparse
 import numpy as np
+import re
 import rdkit
 import selfies as sf
 from tqdm import tqdm
@@ -40,7 +41,8 @@ def main(config, print_metrics=True):
         
     if config.use_selfies:
         gen_selfies = read_selfies_csv(config.gen_path)
-        gen = [sf.decoder(x) for x in tqdm(gen_selfies, desc="Decoding Selfies")]
+        # TODO: not sure if we can remove the 4 tokens (start, end, padding, unk) here
+        gen = [sf.decoder(re.sub(r'\[<.*?>\]', '', x)) for x in tqdm(gen_selfies, desc="Decoding Selfies")]
     else:
         gen = read_smiles_csv(config.gen_path)
     
