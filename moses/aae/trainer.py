@@ -263,10 +263,17 @@ class AAETrainer(MosesTrainer):
         device = self.get_collate_device(model)
 
         def collate(data):
-            data.sort(key=lambda x: len(x), reverse=True)
-
+            x = data.copy()
+            x_ids = [model.vocabulary.string2ids(string) for string in x]
+            
+            # sort by token length not by string length
+            combined = list(zip(x, x_ids))
+            combined_sorted = sorted(combined, key=lambda pair: len(pair[-1]), reverse=True)
+            x_sorted, _ = zip(*combined_sorted)
+            
             tensors = [model.string2tensor(string, device=device)
-                       for string in data]
+                       for string in x_sorted]
+            
             lengths = torch.tensor([len(t) for t in tensors],
                                    dtype=torch.long,
                                    device=device)
