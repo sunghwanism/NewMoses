@@ -4,12 +4,17 @@ import sys
 import torch
 import rdkit
 import pandas as pd
+import numpy as np
 import wandb
 from tqdm.auto import tqdm
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from moses.models_storage import ModelsStorage
 from moses.script_utils import add_opt_args, set_seed, ManualAdamOpt
 from sklearn.gaussian_process import GaussianProcessRegressor
+from moses.metrics import QED, SA, logP
+from rdkit import Chem
+import selfies as sf
 
 
 lg = rdkit.RDLogger.logger()
@@ -42,8 +47,7 @@ def collate_fun(data, model):
 
     tensors = [model.string2tensor(string)
                for string in x_sorted]
-    processed_data = tuple(data.to(model.device) for data in tensors)
-    return processed_data
+    return tensors, x_sorted
 
 def fit_gp(Z, y):
     clf = GaussianProcessRegressor(random_state=42)
@@ -52,6 +56,26 @@ def fit_gp(Z, y):
 
 def objective_f(x, clf):
     return clf.predict(x.reshape(1, -1))[0]
+
+def load_props(mol_strings, config):
+    '''
+    mol_strings: list of strings indicating each molecules. either selfies or smiles'''
+    if config.use_selfies:
+        df = pd.DataFrame(mol_strings, columns=['SELFIES'])
+        df['SMILES'] = df['SELFIES'].apply(sf.decoder)
+
+    else: 
+        df = pd.DataFrame(mol_strings, columns=['SMILES'])
+
+    df['Romol'] = df['SMILES'].apply(Chem.MolFromSmiles)
+  
+
+    df['QED'] = df['Romol'].apply(QED)
+    df['SA'] = df['Romol'].apply(SA)
+    df['logP'] = df['Romol'].apply(logP)
+    df['objective'] = 5*df['QED'] - df['SA']
+    df = df.drop(columns=['Romol'])
+    return df
 
 
 def main(model, config):
@@ -71,61 +95,78 @@ def main(model, config):
     model = model.to(device)
     model.eval()
 
-    samples = []
-    n = config.n_iter
-    with tqdm(total=config.n_iter, desc='Optimizing Molecules') as T:
-        while n > 0:
-            current_samples = model.sample(
-                min(n, config.n_batch), config.max_len
-            )
-            samples.extend(current_samples)
-
-            n -= len(current_samples)
-            T.update(len(current_samples))
-
 ##########
     
-    # Load the GPR training data
+    ## Load the GPR training data
+    # load Z_train data
+    print('Loading GPR training data...')
+
     train_data = pd.read_csv(config.gpr_fit_path)
+    if model_config.use_selfies:
+        
+        mol_train = train_data['SELFIES'].values
+    else:
+        mol_train = train_data['SMILES'].values
+    X_tensors, mol_sorted = collate_fun(mol_train, model)
+    X_train = tuple(data.to(model.device) for data in X_tensors)
 
-    mol_train = train_data['MOL'].values
-    X_train = collate_fun(mol_train, model)
     Z_train, _, _ = model.forward_encoder(X_train)  # use mu as Z_train
+    Z_train = Z_train.detach().cpu().numpy()
 
-    y_train = train_data['objective'].values
-    
-    # Train the Gaussian Process model
+    # load y_train data 
+    sorted_df = load_props(mol_sorted, model_config)
+    y_train = sorted_df['objective'].values
+
+    ## Train the Gaussian Process model
+    print('Training the Gaussian Process model...')
     clf = fit_gp(Z_train, y_train)
 
     # Load the starting molecules for optimization
+    print('Loading the starting molecules for optimization...')
     df = pd.read_csv(config.opt_start_path)
-    initial_mol = df['MOL'].values
-    initial_x = collate_fun(initial_mol, model)
+    if model_config.use_selfies:
+        initial_mol = df['SELFIES'].values
+    else:
+        initial_mol = df['SMILES'].values
+    initial_x, initial_sorted = collate_fun(initial_mol, model)
     initial_z, _, _ = model.forward_encoder(initial_x)
     
-    initial_z.detach().cpu().numpy()
+    initial_z = initial_z.detach().cpu().numpy()
 
     # Adam Gradient Ascent using the class
+    opt_Z = []
+    pred_objs = []
+
     for j in range(initial_z.shape[0]):
+        print(f'Optimizing molecule {j}...')
         initial_point = np.array(initial_z[j])
         optimizer = ManualAdamOpt(objective_f, clf, learning_rate=config.opt_lr, max_iter=config.opt_iter, \
                                   tolerance=config.opt_tol, beta1=config.opt_b1, beta2=config.opt_b2, epsilon=config.opt_eps)
-        optimal_x = optimizer.optimize(initial_point)
+        opt_z = optimizer.optimize(initial_point)
+        pred_obj = clf.predict(opt_z.reshape(1,-1))
 
-            
+        opt_Z.append(opt_z)
+        pred_objs.append(pred_obj)        
 
-    if config.use_selfies:
-        samples = pd.DataFrame(samples, columns=['SELFIES'])
-    else:
-        samples = pd.DataFrame(samples, columns=['SMILES'])
-        
-    if not config.nowandb:
-        wandb.log({'samples': samples})
-    samples.to_csv(config.gen_save, index=False)
+    optZ_np = np.array(opt_Z)
+    optZ_torch = torch.from_numpy(optZ_np)
+    optZ_torch = torch.tensor(optZ_torch, dtype=torch.float32)
 
+    # decode optimized Z to mols
+    model.eval()
+    opt_mols = model.sample(optZ_torch.shape[0], z=optZ_torch, test=True)
+
+    # save optimized mols with related infos
+    optimized_df = load_props(opt_mols, model_config)
+    optimized_df['opt_z'] = opt_Z
+    optimized_df['pred objective'] = pred_objs
+    optimized_df.insert(0, 'start mol', initial_sorted)
+
+    optimized_df.to_csv(config.opt_save, index=False)
 
 if __name__ == '__main__':
     parser = get_parser()
     config = parser.parse_args()
     model = sys.argv[1]
     main(model, config)
+    print('Optimized molecules saved!')

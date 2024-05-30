@@ -22,7 +22,6 @@ def load_module(name, path):
     return module
 
 MODELS = ModelsStorage()
-split_dataset = load_module('split_dataset', 'split_dataset.py')
 opt_script = load_module('opt', 'opt.py')
 
 def get_model_path(config, model, model_starttime):
@@ -169,7 +168,7 @@ def get_parser():
                         help='Learning rate for mol optimization')
     parser.add_argument('--opt_iter', type=int, default=1000,
                         help='Number of mol optimization max iterations')
-    parser.add_argument('--opt_tol', type=float, default=1e-9,
+    parser.add_argument('--opt_tol', type=float, default=1e-3,
                         help='Tolerance for mol optimization')
     parser.add_argument('--opt_b1', type=float, default=0.9,
                         help='Beta1 for mol optimization')
@@ -182,19 +181,19 @@ def get_parser():
 
 
 def opt_from_model(config, model, model_starttime):
-    print('Sampling...')
+    print('Optimizing...')
     model_path = get_model_path(config, model, model_starttime)
     config_path = get_config_path(config, model, model_starttime)
     vocab_path = get_vocab_path(config, model, model_starttime)
 
     assert os.path.exists(model_path), (
-        "Can't find model path for sampling: '{}'".format(model_path)
+        "Can't find model path for optimizing: '{}'".format(model_path)
     )
     assert os.path.exists(config_path), (
-        "Can't find config path for sampling: '{}'".format(config_path)
+        "Can't find config path for optimizing: '{}'".format(config_path)
     )
     assert os.path.exists(vocab_path), (
-        "Can't find vocab path for sampling: '{}'".format(vocab_path)
+        "Can't find vocab path for optimizing: '{}'".format(vocab_path)
     )
 
     opt_parser = opt_script.get_parser()
@@ -203,9 +202,8 @@ def opt_from_model(config, model, model_starttime):
         ['--device', config.device,
          '--model_load', model_path,
          '--config_load', config_path,
-         '--vocab_load', vocab_path
-         '--opt_save', get_optimized_path(config, model, model_starttime, ),]
-        # '--n_samples', str(config.n_samples)]
+         '--vocab_load', vocab_path,
+         '--opt_save', get_optimized_path(config, model, model_starttime, )]
     )[0]
     
     

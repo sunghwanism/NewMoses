@@ -109,15 +109,11 @@ def add_opt_args(parser):
     common_arg.add_argument('--vocab_load',
                             type=str, required=True,
                             help='Where to load the vocab')
-    #common_arg.add_argument('--n_samples',
-                            type=int, required=True,
-                            help='Number of samples to sample')
+
     common_arg.add_argument('--opt_save',
                             type=str, required=True,
                             help='Where to save the gen molecules')
-    #common_arg.add_argument("--n_batch",
-    #                        type=int, default=32,
-    #                        help="Size of batch")
+
     common_arg.add_argument("--max_len",
                             type=int, default=100,
                             help="Max of length of SMILES")
@@ -234,7 +230,9 @@ class ManualAdamOpt:
             if np.linalg.norm(new_x - x) < self.tolerance:
                 break
             x = new_x
-            print(f"Iteration {i+1}: x = {x}, f(x) = {self.f(x, self.clf)}")
+
+            if i % 20 == 0:
+                print(f"Iteration {i+1}: f(x) = {self.f(x, self.clf)}")
         
         return x
     
