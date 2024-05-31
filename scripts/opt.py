@@ -62,7 +62,7 @@ def load_props(mol_strings, config):
     mol_strings: list of strings indicating each molecules. either selfies or smiles'''
     if config.use_selfies:
         df = pd.DataFrame(mol_strings, columns=['SELFIES'])
-        df['SMILES'] = df['SELFIES'].apply(sf.decoder)
+        df.insert(0, 'SMILES', df['SELFIES'].apply(sf.decoder))
 
     else: 
         df = pd.DataFrame(mol_strings, columns=['SMILES'])
@@ -147,26 +147,36 @@ def main(model, config):
 
         opt_Z.append(opt_z)
         pred_objs.append(pred_obj)        
+        
+        if j%1 == 0:
+            optZ_np = np.array(opt_Z)
+            optZ_torch = torch.tensor(optZ_np, dtype=torch.float32) 
+            #optZ_torch = torch.from_numpy(optZ_np)
+            #optZ_torch = torch.tensor(optZ_torch, dtype=torch.float32)
+            pred_objs_np = np.array(pred_objs)
 
-    optZ_np = np.array(opt_Z)
-    optZ_torch = torch.from_numpy(optZ_np)
-    optZ_torch = torch.tensor(optZ_torch, dtype=torch.float32)
+            # decode optimized Z to mols
+            model.eval()
+            opt_mols = model.sample(optZ_torch.shape[0], z=optZ_torch, test=True)
 
-    # decode optimized Z to mols
-    model.eval()
-    opt_mols = model.sample(optZ_torch.shape[0], z=optZ_torch, test=True)
+            # save optimized mols with related infos
+            optimized_df = load_props(opt_mols, model_config)
+            optimized_df['opt_z'] = opt_Z
+            optimized_df['pred objective'] = pred_objs_np
 
-    # save optimized mols with related infos
-    optimized_df = load_props(opt_mols, model_config)
-    optimized_df['opt_z'] = opt_Z
-    optimized_df['pred objective'] = pred_objs
-    optimized_df.insert(0, 'start mol', initial_sorted)
+            starting_df = load_props(initial_sorted, model_config)
+            starting_df.columns = [col + '_ini' for col in starting_df.columns]
+            optimized_df = pd.concat([starting_df, optimized_df], axis=1)
 
-    optimized_df.to_csv(config.opt_save, index=False)
+            optimized_df.to_csv(config.opt_save, index=False)
+    
+
+    
+    print('Optimized molecules saved!')
 
 if __name__ == '__main__':
     parser = get_parser()
     config = parser.parse_args()
     model = sys.argv[1]
     main(model, config)
-    print('Optimized molecules saved!')
+    
