@@ -45,6 +45,14 @@ For use the wandb, you need to setup below file:
 python scripts/run.py --device cuda:0 —model vae --use_selfies 1 --n_batch 2048 --wandb_entity {wandb_id} --wandb_project {project_name} --nowandb 0
 ```
 
+- How to run VAE with property predictor
+  - When you run the vae with property predictor, you can choose certain properties or all.
+
+Example:
+```sh 
+python scripts/run.py --device cuda:0 —model vae_property --reg_prop_tasks logP qed --n_batch 2048
+```
+
 ## Adding the Dataset
 If you train model using your model, add the splited dataset named train.csv, test.csv in moses > dataset > data > {datasetname} > files
 For example, we have already make the directory for ZINC and QM9 dataset
