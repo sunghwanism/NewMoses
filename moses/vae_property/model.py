@@ -75,7 +75,7 @@ class VAEPROPERTY(nn.Module):
                     predictor_layers.append(nn.Dropout(config.p_dropout))
 
         self.predictor_layers = nn.Sequential(*predictor_layers)
-        self.predictor_fc = nn.Linear(out_dims, config.reg_prop_tasks)
+        self.predictor_fc = nn.Linear(out_dims, len(config.reg_prop_tasks))
 
         # Grouping the model's parameters
         self.encoder = nn.ModuleList([
