@@ -38,7 +38,7 @@ class VAEPROPERTYTrainer(MosesTrainer):
             
             x_tensors = [model.string2tensor(string, device=device)
                        for string in x_sorted]
-            y_tensors = [torch.tensor(y_sorted, dtype=torch.float32, device=device)]
+            y_tensors = torch.tensor(y_sorted, dtype=torch.float32, device=device)
 
             return x_tensors, y_tensors
 
@@ -58,7 +58,7 @@ class VAEPROPERTYTrainer(MosesTrainer):
         for input_batch in tqdm_data:
             x_batch, y_batch = input_batch
             x_batch = tuple(data.to(model.device) for data in x_batch)
-            y_batch = y_batch[0].to(model.device)   
+            y_batch = y_batch.to(model.device)   
             
             # Forward
             kl_loss, recon_loss, prop_loss = model(x_batch, y_batch)

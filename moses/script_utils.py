@@ -1,6 +1,7 @@
 import argparse
 import random
 import re
+import copy
 import numpy as np
 import pandas as pd
 import torch
@@ -101,7 +102,9 @@ def read_data_csv(path, config):
     
     if hasattr(config, 'reg_prop_tasks'):
         df = pd.read_csv(path)
-        cols = ['logP', 'qed', 'SAS']
+        if isinstance(config.reg_prop_tasks, str):
+            config.reg_prop_tasks = [c.strip() for c in config.reg_prop_tasks.split(',')]
+        cols = copy.copy(config.reg_prop_tasks)
         cols.insert(0, 'SELFIES' if config.use_selfies else 'SMILES')
         data = df[cols].values
         return data
