@@ -31,7 +31,15 @@ def get_dataset(split='train', config=None):
     df = pd.read_csv(path)
 
     if hasattr(config, 'reg_prop_tasks'):
-        cols = ['logP', 'qed', 'SAS']
+        if len(config.reg_prop_tasks) == 1:
+            if config.reg_prop_tasks[0] == 'logP':
+                cols = ['logP']
+            elif config.reg_prop_tasks[0] == 'qed':
+                cols = ['qed']
+            elif config.reg_prop_tasks[0] == 'SAS':
+                cols = ['SAS']
+        else:
+            cols = ['logP', 'qed', 'SAS']
         cols.insert(0, 'SELFIES' if config.use_selfies else 'SMILES')
         data = df[cols].values
         return data

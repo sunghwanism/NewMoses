@@ -163,3 +163,5 @@ cython_debug/
 
 checkpoints/
 .DS_Store
+moses/dataset/data/ZINC/train.csv
+moses/dataset/data/ZINC/test.csv

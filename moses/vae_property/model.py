@@ -69,10 +69,10 @@ class VAEPROPERTY(nn.Module):
                 int(config.p_d_h * config.p_growth_factor ** p_i)
                 ))
             out_dims = int(config.p_d_h * config.p_growth_factor ** p_i)
-            predictor_layers.append(nn.Tanh())
+            predictor_layers.append(nn.BatchNorm1d(out_dims))
+            predictor_layers.append(nn.ReLU())
             if config.p_dropout > 0:
                     predictor_layers.append(nn.Dropout(config.p_dropout))
-            predictor_layers.append(nn.BatchNorm1d(out_dims))
 
         self.predictor_layers = nn.Sequential(*predictor_layers)
         self.predictor_fc = nn.Linear(out_dims, config.reg_prop_tasks)

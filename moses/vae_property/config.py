@@ -53,8 +53,8 @@ def get_parser(parser=None):
                            default=False, action='store_true',
                            help='If to freeze embeddings while training')
     model_arg.add_argument('--reg_prop_tasks', 
-                           type=int, default=3,
-                           help='If to use property predictor')
+                           type=str, nargs='+', default=['logP'],
+                           help='list of the property for prediction')
 
     # Train
     train_arg = parser.add_argument_group('Train')
