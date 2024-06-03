@@ -1,4 +1,5 @@
 import os
+import copy
 import numpy as np
 import pandas as pd
 
@@ -31,7 +32,9 @@ def get_dataset(split='train', config=None):
     df = pd.read_csv(path)
 
     if hasattr(config, 'reg_prop_tasks'):
-        cols = ['logP', 'qed', 'SAS']
+        if isinstance(config.reg_prop_tasks, str):
+            config.reg_prop_tasks = [c.strip() for c in config.reg_prop_tasks.split(',')]
+        cols = copy.copy(config.reg_prop_tasks)
         cols.insert(0, 'SELFIES' if config.use_selfies else 'SMILES')
         data = df[cols].values
         return data
