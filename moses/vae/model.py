@@ -129,7 +129,7 @@ class VAE(nn.Module):
 
         kl_loss = 0.5 * (logvar.exp() + mu ** 2 - 1 - logvar).sum(1).mean()
 
-        return z, kl_loss
+        return mu, logvar, z, kl_loss
 
     def forward_decoder(self, x, z):
         """Decoder step, emulating x ~ G(z)

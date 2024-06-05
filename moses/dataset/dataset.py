@@ -46,3 +46,4 @@ def get_statistics(split='test', config=None):
     base_path = os.path.dirname(__file__)
     path = os.path.join(base_path, f'data/{config.data}', split+'_stats.npz')
     return np.load(path, allow_pickle=True)['stats'].item()
+
