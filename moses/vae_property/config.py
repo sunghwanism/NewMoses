@@ -53,9 +53,9 @@ def get_parser(parser=None):
                            default=False, action='store_true',
                            help='If to freeze embeddings while training')
     model_arg.add_argument('--reg_prop_tasks',
-                           nargs='+', choices=['logP', 'qed', 'SAS'],
+                           nargs='+', choices=['logP', 'qed', 'SAS', 'obj'],
                            type=str, default='logP, qed, SAS',
-                           help='If to use property predictor')
+                           help='Choose properties to predict')
 
     # Train
     train_arg = parser.add_argument_group('Train')
