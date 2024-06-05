@@ -124,7 +124,7 @@ def get_parser():
     parser.add_argument('--experiment_suff', type=str, default='',
                         help='Experiment suffix to break ambiguity')
     parser.add_argument('--data', type=str, default='ZINC', 
-                        choices=['ZINC', 'QM9'], help='Dataset to use')
+                        choices=['ZINC', 'QM9', 'ZINC250K'], help='Dataset to use')
     
     parser.add_argument('--wandb_entity', type=str,
                         help='Wandb entity name')

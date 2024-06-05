@@ -26,7 +26,7 @@ pip install torch==1.12.0+cpu torchvision==0.13.0+cpu torchaudio==0.12.0 --extra
 - Only train one model on each process b/c of wandb tracking
 - run the below code for training the model
 - You can use benchmark model: aae, char_rnn, latentgan, organ and vae
-- You can use benchmark dataset: QM9, ZINC
+- You can use benchmark dataset: QM9, ZINC, ZINC250K
 - Before running the code, make sure to unzip the `train.zip` and `test_stats.zip` files of ZINC, which were compressed due to upload limitations
 - If you use cuda, add '--device cuda:{device_idx}', else --device cpu
 - If you want to train model with selfies format, you add the '--use_selfies 1' when you run the scripts/run.py
