@@ -176,7 +176,7 @@ class VAE(nn.Module):
         return torch.randn(n_batch, self.q_mu.out_features,
                            device=self.x_emb.weight.device)
 
-    def sample(self, n_batch, max_len=100, z=None, temp=1.0):
+    def sample(self, n_batch, max_len=100, z=None, temp=1.0, test=False):
         """Generating n_batch samples in eval mode (`z` could be
         not on same device)
 
@@ -232,7 +232,11 @@ class VAE(nn.Module):
                 y = self.decoder_fc(o.squeeze(1))
                 y = F.softmax(y / temp, dim=-1)
 
-                w = torch.multinomial(y, 1)[:, 0]
+                if test:
+                    w = torch.argmax(y, dim=-1)
+                else:
+                    w = torch.multinomial(y, 1)[:, 0]
+
                 x[~eos_mask, i] = w[~eos_mask]
                 i_eos_mask = ~eos_mask & (w == self.eos)
                 end_pads.masked_fill_(i_eos_mask, i + 1)
