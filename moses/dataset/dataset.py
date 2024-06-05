@@ -8,7 +8,7 @@ import selfies as sf
 AVAILABLE_SPLITS = ['train', 'test', 'test_scaffolds']
 
 
-def get_dataset(split='train', config=None):
+def get_dataset(split='train', config=None, viz=False):
     """
     Loads MOSES dataset
 
@@ -34,7 +34,12 @@ def get_dataset(split='train', config=None):
     if hasattr(config, 'reg_prop_tasks'):
         if isinstance(config.reg_prop_tasks, str):
             config.reg_prop_tasks = [c.strip() for c in config.reg_prop_tasks.split(',')]
+
         cols = copy.copy(config.reg_prop_tasks)
+        if viz:
+            cols.insert(1, 'logP')
+            cols.insert(2, 'qed')
+            cols.insert(3, 'SAS')
         cols.insert(0, 'SELFIES' if config.use_selfies else 'SMILES')
         data = df[cols].values
         return data
