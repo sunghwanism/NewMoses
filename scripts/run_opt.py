@@ -168,7 +168,7 @@ def get_parser():
                         help='Learning rate for mol optimization')
     parser.add_argument('--opt_iter', type=int, default=1000,
                         help='Number of mol optimization max iterations')
-    parser.add_argument('--opt_tol', type=float, default=1e-3,
+    parser.add_argument('--opt_tol', type=float, default=1e-5,
                         help='Tolerance for mol optimization')
     parser.add_argument('--opt_b1', type=float, default=0.9,
                         help='Beta1 for mol optimization')
