@@ -160,6 +160,7 @@ def main(model, config):
             opt_mols = model.sample(optZ_torch.shape[0], z=optZ_torch, test=True)
 
             # save optimized mols with related infos
+            
             optimized_df = load_props(opt_mols, model_config)
             optimized_df['opt_z'] = opt_Z
             optimized_df['pred objective'] = pred_objs_np
