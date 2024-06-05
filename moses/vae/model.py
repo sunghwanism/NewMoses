@@ -100,7 +100,7 @@ class VAE(nn.Module):
         """
 
         # Encoder: x -> z, kl_loss
-        z, kl_loss = self.forward_encoder(x)
+        _, z, kl_loss = self.forward_encoder(x)
 
         # Decoder: x, z -> recon_loss
         recon_loss = self.forward_decoder(x, z)
@@ -129,7 +129,7 @@ class VAE(nn.Module):
 
         kl_loss = 0.5 * (logvar.exp() + mu ** 2 - 1 - logvar).sum(1).mean()
 
-        return z, kl_loss
+        return mu, z, kl_loss
 
     def forward_decoder(self, x, z):
         """Decoder step, emulating x ~ G(z)
