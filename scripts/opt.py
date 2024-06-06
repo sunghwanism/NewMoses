@@ -37,17 +37,32 @@ def collate_fun(data, model):
     transform molecule strings to embedded tensors
     data: list of strings
     '''
-    x = data.copy()
+    #x = data.copy()
+    #x_ids = [model.vocabulary.string2ids(string) for string in x]
+#
+    ## sort by token length not by string length
+    #combined = list(zip(x, x_ids))
+    #combined_sorted = sorted(combined, key=lambda pair: len(pair[-1]), reverse=True)
+    #x_sorted, _ = zip(*combined_sorted)
+#
+    #tensors = [model.string2tensor(string)
+    #           for string in x_sorted]
+    #return tensors, x_sorted
+
+    x = [item[0] for item in data]
+    y = [item[1:] for item in data]
     x_ids = [model.vocabulary.string2ids(string) for string in x]
-
+    
     # sort by token length not by string length
-    combined = list(zip(x, x_ids))
+    combined = list(zip(x, y, x_ids))
     combined_sorted = sorted(combined, key=lambda pair: len(pair[-1]), reverse=True)
-    x_sorted, _ = zip(*combined_sorted)
-
-    tensors = [model.string2tensor(string)
+    x_sorted, y_sorted, _ = zip(*combined_sorted)
+    
+    x_tensors = [model.string2tensor(string)
                for string in x_sorted]
-    return tensors, x_sorted
+    y_tensors = torch.tensor(y_sorted, dtype=torch.float32)
+
+    return x_tensors, y_tensors
 
 def fit_gp(Z, y):
     clf = GaussianProcessRegressor(random_state=42)
@@ -103,19 +118,20 @@ def main(model, config):
 
     train_data = pd.read_csv(config.gpr_fit_path)
     if model_config.use_selfies:
-        
-        mol_train = train_data['SELFIES'].values
+        cols = ['SELFIES', 'obj', 'logP', 'qed', 'SAS']
     else:
-        mol_train = train_data['SMILES'].values
-    X_tensors, mol_sorted = collate_fun(mol_train, model)
+        cols = ['SMILES', 'obj', 'logP', 'qed', 'SAS'] 
+
+    #create initial_data which have values of df with the cols
+    train_data = train_data[cols].values 
+    X_tensors, y_tensors = collate_fun(train_data, model)
     X_train = tuple(data.to(model.device) for data in X_tensors)
 
     Z_train, _, _ = model.forward_encoder(X_train)  # use mu as Z_train
     Z_train = Z_train.detach().cpu().numpy()
 
     # load y_train data 
-    sorted_df = load_props(mol_sorted, model_config)
-    y_train = sorted_df['objective'].values
+    y_train = y_tensors[:, 0]  # use objective as y_train
 
     ## Train the Gaussian Process model
     print('Training the Gaussian Process model...')
@@ -125,10 +141,19 @@ def main(model, config):
     print('Loading the starting molecules for optimization...')
     df = pd.read_csv(config.opt_start_path)
     if model_config.use_selfies:
-        initial_mol = df['SELFIES'].values
+        cols = ['SELFIES', 'obj', 'logP', 'qed', 'SAS']
     else:
-        initial_mol = df['SMILES'].values
-    initial_x, initial_sorted = collate_fun(initial_mol, model)
+        cols = ['SMILES', 'obj', 'logP', 'qed', 'SAS'] 
+
+    #create initial_data which have values of df with the cols
+    initial_data = df[cols].values 
+
+    initial_x, initial_y = collate_fun(initial_data, model)
+    starting_df = pd.DataFrame(([model_vocab.ids2string(point.detach().cpu().numpy())] for point in initial_x), columns=["mol_ini"])
+
+    cols = ['obj_ini', 'logP_ini', 'qed_ini', 'SAS_ini']
+    starting_df[cols] = initial_y.detach().cpu().numpy()
+
     initial_z, _, _ = model.forward_encoder(initial_x)
     
     initial_z = initial_z.detach().cpu().numpy()
@@ -165,8 +190,7 @@ def main(model, config):
             optimized_df['opt_z'] = opt_Z
             optimized_df['pred objective'] = pred_objs_np
 
-            starting_df = load_props(initial_sorted, model_config)
-            starting_df.columns = [col + '_ini' for col in starting_df.columns]
+            
             optimized_df = pd.concat([starting_df, optimized_df], axis=1)
 
             optimized_df.to_csv(config.opt_save, index=False)

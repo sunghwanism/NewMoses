@@ -33,7 +33,7 @@ def get_model_path(config, model, model_starttime):
     unique_folder_path = os.path.join(config.checkpoint_dir, unique_folder)
             
     return os.path.join(
-        unique_folder_path, model + config.experiment_suff + f'_model_{config.load_epoch}.pt'
+        unique_folder_path, model + config.experiment_suff + f'_model.pt'
     )
 
 def get_log_path(config, model, model_starttime):
@@ -139,7 +139,7 @@ def get_parser():
     parser.add_argument('--experiment_suff', type=str, default='',
                         help='Experiment suffix to break ambiguity')
     parser.add_argument('--data', type=str, default='ZINC', 
-                        choices=['ZINC', 'QM9'], help='Dataset to use')
+                        choices=['ZINC', 'QM9', 'ZINC250K'], help='Dataset to use')
     parser.add_argument('--use_selfies', type=int, default=0,
                         choices=[0, 1], help='Use selfies format')
     
@@ -168,7 +168,7 @@ def get_parser():
                         help='Learning rate for mol optimization')
     parser.add_argument('--opt_iter', type=int, default=1000,
                         help='Number of mol optimization max iterations')
-    parser.add_argument('--opt_tol', type=float, default=1e-5,
+    parser.add_argument('--opt_tol', type=float, default=1e-3,
                         help='Tolerance for mol optimization')
     parser.add_argument('--opt_b1', type=float, default=0.9,
                         help='Beta1 for mol optimization')
