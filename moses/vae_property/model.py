@@ -126,7 +126,7 @@ class VAEPROPERTY(nn.Module):
         """
 
         # Encoder: x -> z, kl_loss
-        mu, z, kl_loss = self.forward_encoder(x)
+        mu, _, z, kl_loss = self.forward_encoder(x)
         
         # Property Predictor: z -> y
         prop_loss = self.forward_prop_predictor(mu, y)
@@ -158,7 +158,7 @@ class VAEPROPERTY(nn.Module):
 
         kl_loss = 0.5 * (logvar.exp() + mu ** 2 - 1 - logvar).sum(1).mean()
 
-        return mu, z, kl_loss
+        return mu, logvar, z, kl_loss
 
     def forward_prop_predictor(self, z, y):
         """Property Predictor step, emulating y ~ f(z)
