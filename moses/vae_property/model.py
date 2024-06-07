@@ -174,8 +174,8 @@ class VAEPROPERTY(nn.Module):
         
         prop_loss = F.mse_loss(preds, y)
         
-        return prop_loss
-        
+        return prop_loss, preds
+    
 
     def forward_decoder(self, x, z):
         """Decoder step, emulating x ~ G(z)
