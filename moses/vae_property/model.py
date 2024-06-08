@@ -129,7 +129,7 @@ class VAEPROPERTY(nn.Module):
         mu, _, z, kl_loss = self.forward_encoder(x)
         
         # Property Predictor: z -> y
-        prop_loss = self.forward_prop_predictor(mu, y)
+        prop_loss, _ = self.forward_prop_predictor(mu, y)
 
         # Decoder: x, z -> recon_loss
         recon_loss = self.forward_decoder(x, z)
