@@ -268,7 +268,8 @@ class VAEPROPERTY(nn.Module):
             x[:, 0] = self.bos
             end_pads = torch.tensor([max_len], device=self.device).repeat(n_batch)
             eos_mask = torch.zeros(n_batch, dtype=torch.bool, device=self.device)
-
+            
+            y_bef = []
             # Generating cycle
             for i in range(1, max_len):
                 x_emb = self.x_emb(w).unsqueeze(1)
@@ -276,6 +277,7 @@ class VAEPROPERTY(nn.Module):
 
                 o, h = self.decoder_rnn(x_input, h)
                 y = self.decoder_fc(o.squeeze(1))
+                y_bef.append(y)
                 y = F.softmax(y / temp, dim=-1)
 
                 if test:
