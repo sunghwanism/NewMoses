@@ -1,0 +1,8 @@
+scipy
+pandas==1.5.3
+rdkit
+matplotlib
+fcd_torch==1.0.7
+tqdm
+wandb
+selfies
