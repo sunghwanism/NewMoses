@@ -1,0 +1,8 @@
+gen_SELFIES,gen_SMILES,gen_qed,gen_sa,obj,iter
+[C][C][C][C][C][C][N][C][=Branch1][C][=O][C][=C][C][=C][Branch1][C][F][C][=C][Ring1][#Branch1][C],CCCCCCNC(=O)C1=CC=C(F)C=C1C,0.7543321374973503,1.6419130630189525,2.129747624467799,0
+[C][C][C][C][C][C][N][Ring1][=Branch1][C][=Branch1][C][=O][C][N][C][C][N][Branch1][N][C][=C][C][=C][Branch1][C][O][C][=C][Ring1][#Branch1][C][C][Ring1][=N],CC1CCCCN1C(=O)CN2CCN(C3=CC=C(O)C=C3)CC2,0.9250665408041052,2.4335421445924936,2.191790559428032,13
+[C][C][=C][C][=C][Branch2][Ring1][Branch2][C][=Branch1][C][=O][N][C][C][C][Branch1][#Branch2][O][C][=C][C][=C][C][=C][Ring1][=Branch1][C][C][Ring1][=N][C][=C][Ring2][Ring1][Branch1],CC1=CC=C(C(=O)N2CCC(OC3=CC=CC=C3)CC2)C=C1,0.864229726762445,1.679385136032911,2.641763497779314,14
+[C][C][Branch1][C][C][C][N][C][=Branch1][C][=O][C][=C][C][=C][Branch1][C][Br][C][=C][Ring1][#Branch1],CC(C)CNC(=O)C1=CC=C(Br)C=C1,0.884707496810484,1.5097664156516508,2.913771068400769,24
+[C][C][=C][C][=C][C][=C][Ring1][=Branch1][C][N][C][=Branch1][C][=O][C][=C][C][=C][C][=C][Ring1][=Branch1][F],CC1=CC=CC=C1CNC(=O)C2=CC=CC=C2F,0.8815329027378745,1.4877204033674811,2.9199441103218913,25
+[C][C][=C][C][=C][C][=C][Ring1][=Branch1][C][N][C][=Branch1][C][=O][C][C][=C][C][=C][C][=C][Ring1][=Branch1][O][C],CC1=CC=CC=C1CNC(=O)CC2=CC=CC=C2OC,0.9060848052154271,1.5968753095614776,2.9335487165156575,64
+[C][C][=C][C][=C][C][Branch2][Ring1][#Branch2][C][N][C][=Branch1][C][=O][C][=C][C][=C][Branch1][#Branch2][C][=Branch1][C][=O][N][Branch1][C][C][C][C][=C][Ring1][O][=C][Ring2][Ring1][Branch1],CC1=CC=CC(CNC(=O)C2=CC=C(C(=O)N(C)C)C=C2)=C1,0.9426154918112145,1.6191195740846123,3.09395788497146,75
