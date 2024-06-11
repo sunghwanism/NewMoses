@@ -1,0 +1,1 @@
+final: SMILE/SELF_VAEProp_obj or _VAE
