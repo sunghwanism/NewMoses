@@ -34,6 +34,8 @@ def main(model, config):
     device = torch.device(config.device)
 
     if config.config_save is not None:
+        if isinstance(config.reg_prop_tasks, str):
+            config.reg_prop_tasks = [c.strip() for c in config.reg_prop_tasks.split(',')]
         torch.save(config, config.config_save)
 
     # For CUDNN to work properly
