@@ -42,11 +42,13 @@ def InterpolationLoader(dataPATH, model_type, data_type, best_epoch, i_1, i_2):
         else:
             folder_path = "../checkpoints/ZINC250K_vae_smiles"      
     
-    config = torch.load(f'{folder_path}/vae_property_config.pt')
-    vocab = torch.load(f'{folder_path}/vae_property_vocab.pt')
-
+    config = torch.load(f'{folder_path}/{model_type}_config.pt')
+    vocab = torch.load(f'{folder_path}/{model_type}_vocab.pt')
+    config.reg_prop_tasks = ['obj']
+    
     print(f"Use Selfies: {config.use_selfies}")
-    print(config.reg_prop_tasks)
+    if model_type == "vae_property":
+        print(config.reg_prop_tasks)
 
     cols = ['SELFIES' if config.use_selfies else 'SMILES', 'logP', 'qed', 'SAS', 'obj']
     
@@ -56,13 +58,14 @@ def InterpolationLoader(dataPATH, model_type, data_type, best_epoch, i_1, i_2):
     print("Sample Input shape", train_data.shape)
 
     if model_type == "vae_property":
-        model_path = f'{folder_path}/vae_property_model_0{best_epoch}.pt'
+        #  model_path = f'{folder_path}/vae_property_model_0{best_epoch}.pt'
+        model_path = f'{folder_path}/vae_property_model.pt'
         model = VAEPROPERTY(vocab, config)
         model.load_state_dict(torch.load(model_path))
         trainer = VAEPROPERTYTrainer(config)
 
     elif model_type == "vae":
-        model_path = f'{folder_path}/vae_model_0{best_epoch}.pt'
+        model_path = f'{folder_path}/vae_model.pt'
         model = VAE(vocab, config)
         model.load_state_dict(torch.load(model_path))
         trainer = VAETrainer(config)
@@ -76,21 +79,28 @@ def InterpolationLoader(dataPATH, model_type, data_type, best_epoch, i_1, i_2):
     mu_list = []
     logvar_list = []
     y_list = []
+    if model_type == 'vae_property':
+        for step, batch in enumerate(loader):
+            x = batch[0]
+            x_list.extend(x)
+                
+            if model_type == 'vae_property':
+                y = batch[1]
+                y_list.extend(np.array(y).squeeze())
 
-    for step, batch in enumerate(loader):
-        x = batch[0]
-        x_list.extend(x)
+            mu, logvar, z, _ = model.forward_encoder(x)
+            z_list.extend(z.detach().cpu().numpy())
+            mu_list.extend(mu.detach().cpu().numpy())
+            logvar_list.extend(logvar.detach().cpu().numpy())
             
-        if model_type == 'vae_property':
-            
-            y = batch[1]
-            y_list.extend(np.array(y).squeeze())
+    else:
+        for step, batch in enumerate(loader):
 
-        mu, logvar, z, _ = model.forward_encoder(x)
-        z_list.extend(z.detach().cpu().numpy())
-        mu_list.extend(mu.detach().cpu().numpy())
-        logvar_list.extend(logvar.detach().cpu().numpy())
-            
+            x_list.extend(batch)
+            mu, logvar, z, _ = model.forward_encoder(batch)
+            z_list.extend(z.detach().cpu().numpy())
+            mu_list.extend(mu.detach().cpu().numpy())
+            logvar_list.extend(logvar.detach().cpu().numpy())
             
     z_list = np.array(z_list)
     logvar_list = np.array(logvar_list)
