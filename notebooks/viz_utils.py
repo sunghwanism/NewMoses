@@ -15,7 +15,15 @@ from moses.vae_property.trainer import VAEPROPERTYTrainer
 
 import selfies as sf
 from rdkit import Chem
+from moses.metrics import QED, SA, logP
 from rdkit.Chem import PandasTools
+
+import gpytorch
+from botorch.models import SingleTaskGP
+from botorch.fit import fit_gpytorch_model
+from botorch.acquisition import ProbabilityOfImprovement
+from botorch.optim import optimize_acqf
+
 
 # SLERP 함수 정의
 def slerp(val, low, high):
@@ -146,3 +154,225 @@ def z_to_smiles(model, origin, interpolated_z, data_type, steps, temp=1.0, argma
         display(PandasTools.FrameToGridImage(viz_df, column='RoMol', legendsCol='SMILES', molsPerRow=steps+2))
         
     return viz_df
+
+
+def ready_gpr(sample_num, data_type='smiles', model_name='vae_property_obj_w0.1'):
+    
+    train_df = pd.read_csv("../checkpoints/opimize_gpr/gpr_fit_ZINC250K_df.csv")[:sample_num]
+    test_df = pd.read_csv("../checkpoints/opimize_gpr/gpr_test_ZINC250K_df.csv")
+    start_df = pd.read_csv("../checkpoints/opimize_gpr/opt_start_ZINC250K_df.csv")
+    
+    print(f'gpr train: {train_df.shape}')
+    print(f'gpr test: {test_df.shape}')
+    print(f'gpr start: {start_df.shape}')
+    
+    # Choose model
+    folder_path = f"../checkpoints/ZINC250K_{model_name}_{data_type}"
+    
+    if 'property' in model_name:
+        config = torch.load(f'{folder_path}/vae_property_config.pt')
+        vocab = torch.load(f'{folder_path}/vae_property_vocab.pt')
+    else:
+        config = torch.load(f'{folder_path}/vae_config.pt')
+        vocab = torch.load(f'{folder_path}/vae_vocab.pt')
+        config.reg_prop_tasks = ['obj']
+    
+    print(f"Use Selfies: {config.use_selfies}")
+    print(config.reg_prop_tasks)
+    
+    cols = ['SELFIES' if config.use_selfies else 'SMILES', 'logP', 'qed', 'SAS', 'obj']
+    
+    train_data = train_df[cols].values
+    test_data = test_df[cols].values
+    
+    if 'property' in model_name:
+        model_path = f'{folder_path}/vae_property_model.pt'
+        model = VAEPROPERTY(vocab, config)
+        model.load_state_dict(torch.load(model_path))
+        trainer = VAEPROPERTYTrainer(config)
+        
+    else:
+        model_path = f'{folder_path}/vae_model_060.pt'
+        model = VAE(vocab, config)
+        model.load_state_dict(torch.load(model_path))
+        trainer = VAETrainer(config)
+    
+    train_loader = trainer.get_dataloader(model, train_data, shuffle=False)
+    test_loader = trainer.get_dataloader(model, test_data, shuffle=False)
+    
+    model.eval()
+
+    x_list = []
+    z_list = []
+    mu_list = []
+    logvar_list = []
+    y_list = []
+
+    for step, batch in enumerate(train_loader):
+        x = batch[0]
+        y = batch[1]
+        x_list.extend(x)
+        y_list.extend(np.array(y).squeeze())
+
+        mu, logvar, z, _ = model.forward_encoder(x)
+        z_list.extend(z.detach().cpu().numpy())
+        mu_list.extend(mu.detach().cpu().numpy())
+        logvar_list.extend(logvar.detach().cpu().numpy())
+
+
+
+    y_list = np.array(y_list).squeeze()
+    GP_train_y = y_list.reshape(-1, y_list.shape[-1])
+
+    train_data_df = pd.DataFrame(GP_train_y, columns=['logP', 'qed', 'SAS', 'obj'])
+    train_data_df = pd.concat([train_data_df , pd.DataFrame({'z': z_list, 'mu': mu_list, 'logvar': logvar_list})], axis=1)
+    train_data_df.insert(0, 'SELFIES' if config.use_selfies else 'SMILES', [vocab.ids2string(point.cpu().detach().numpy()) for point in x_list])
+
+    test_x_list = []
+    test_z_list = []
+    test_mu_list = []
+    test_logvar_list = []
+    test_y_list = []
+
+
+    # y_list = y_list.squeeze()
+
+    for step, batch in enumerate(test_loader):
+        x = batch[0]
+        y = batch[1]
+        test_x_list.extend(x)
+        test_y_list.extend(np.array(y).squeeze())
+
+        mu, logvar, z, _ = model.forward_encoder(x)
+        test_z_list.extend(z.detach().cpu().numpy())
+        test_mu_list.extend(mu.detach().cpu().numpy())
+        test_logvar_list.extend(logvar.detach().cpu().numpy())
+
+
+    test_y_list = np.array(test_y_list).squeeze()
+    GP_test_y = test_y_list.reshape(-1, test_y_list.shape[-1])
+
+    test_data_df = pd.DataFrame(GP_test_y, columns=['logP', 'qed', 'SAS', 'obj'])
+    test_data_df = pd.concat([test_data_df , pd.DataFrame({'z': test_z_list, 'mu': test_mu_list, 'logvar': test_logvar_list})], axis=1)
+    test_data_df
+    # test_data_df.insert(0, 'SELFIES' if config.use_selfies else 'SMILES', [vocab.ids2string(point.cpu().detach().numpy()) for point in test_x_list])
+    
+    GP_Train_x = torch.tensor(np.array([x for x in train_data_df['z']]))
+    GP_Test_x = torch.tensor(np.array([x for x in test_data_df['z']]))
+
+    GP_Train_y = np.array([x for x in train_data_df['obj']])
+    GP_Test_y = np.array([x for x in test_data_df['obj']])
+    
+    
+    return GP_Train_x, GP_Train_y, GP_Test_x, GP_Test_y, train_data_df, test_data_df, model, vocab, config
+    
+    
+def generate_df(GP_Train_x, index_list, model, config, nan_qed, nan_sa, temp=1.0, test=True):
+
+    gen = model.sample(len(GP_Train_x), max_len=100, z=torch.tensor(GP_Train_x), temp=temp, test=test)
+    gen_df = pd.DataFrame(gen, columns=['gen_SELFIES' if config.use_selfies else 'gen_SMILES'])
+
+    if config.use_selfies:
+        gen_df['gen_SMILES'] = [sf.decoder(x) for x in gen_df['gen_SELFIES']]
+        mol = gen_df['gen_SMILES'].apply(Chem.MolFromSmiles)
+    else:
+        mol = gen_df['gen_SMILES'].apply(Chem.MolFromSmiles)
+
+    qed_list = []
+    sa_list = []
+    null_cnt = 0
+
+    for i, gen_mol in enumerate(mol):
+        if gen_mol is None:
+            qed_list.append(nan_qed)
+            sa_list.append(nan_sa)
+            null_cnt += 1
+            
+        else:
+            qed = QED(gen_mol)
+            sa = SA(gen_mol)
+            qed_list.append(qed)
+            sa_list.append(sa)
+            
+    gen_df['gen_qed'] = qed_list
+    gen_df['gen_sa'] = sa_list
+    gen_df['obj'] = 5*gen_df['gen_qed'] - gen_df['gen_sa']
+    gen_df['iter'] = index_list
+    
+    print(f"Null SMILES: {null_cnt}")
+    print(f"# of Unique smiles", len(gen_df.gen_SMILES.unique()))
+    
+    return gen_df
+
+
+def calculate_qed_sa(model, config, nan_qed, nan_sa, z, temp, test=True):
+    gen = model.sample(len(z), max_len=100, z=z, temp=temp, test=test)
+    gen_df = pd.DataFrame(gen, columns=['gen_SELFIES' if config.use_selfies else 'gen_SMILES'])
+
+    if config.use_selfies:
+        gen_df['gen_SMILES'] = [sf.decoder(x) for x in gen_df['gen_SELFIES']]
+        mol = gen_df['gen_SMILES'].apply(Chem.MolFromSmiles)
+    else:
+        mol = gen_df['gen_SMILES'].apply(Chem.MolFromSmiles)
+
+    qed_list = []
+    sa_list = []
+
+    for i, gen_mol in enumerate(mol):
+        if gen_mol is None:
+            qed_list.append(nan_qed)
+            sa_list.append(nan_sa)
+            
+        else:
+            qed = QED(gen_mol)
+            sa = SA(gen_mol)
+            qed_list.append(qed)
+            sa_list.append(sa)
+            
+    gen_df['gen_qed'] = qed_list
+    gen_df['gen_sa'] = sa_list
+
+    return gen_df['gen_qed'].values, gen_df['gen_sa'].values
+
+# 목적 함수 정의
+def objective_function(model, config, nan_qed, nan_sa, new_z, temp, test):
+    qed, sa = calculate_qed_sa(model, config, nan_qed, nan_sa, new_z, temp, test)
+    return 5 * qed - sa
+
+# 초기 데이터 수집
+def initial_data(GP_Train_x, GP_Test_y):
+    train_z = GP_Train_x
+    train_y = torch.tensor(GP_Test_y)
+    
+    return train_z, train_y.unsqueeze(-1)
+
+
+# GPR 모델 학습
+def train_gp(train_z, train_y):
+    gp = SingleTaskGP(train_z, train_y)
+    mll = gpytorch.mlls.ExactMarginalLogLikelihood(gp.likelihood, gp)
+    fit_gpytorch_model(mll)
+    
+    return gp
+
+# 획득 함수 최적화
+def optimize_acq(gp, bounds, train_y):
+    # acqf = ExpectedImprovement(gp, best_f=train_y.max().item())
+    acqf = ProbabilityOfImprovement(gp, best_f=train_y.max().item())
+    new_z, _ = optimize_acqf(acqf, bounds=bounds, q=1, num_restarts=5, raw_samples=20)
+    
+    return new_z
+
+
+def reshape_z(z):
+    return np.array(z).squeeze()
+
+
+def vizualizeMol(gen_df, data_type):
+    
+    gen_df['RoMol'] = gen_df['gen_SMILES'].apply(Chem.MolFromSmiles)
+
+    if data_type == 'selfies':
+        display(PandasTools.FrameToGridImage(gen_df, column='RoMol', legendsCol='gen_SELFIES', molsPerRow=len(gen_df)))
+    else:
+        display(PandasTools.FrameToGridImage(gen_df, column='RoMol', legendsCol='gen_SMILES', molsPerRow=len(gen_df)))
