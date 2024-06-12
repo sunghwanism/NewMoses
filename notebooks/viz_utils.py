@@ -24,6 +24,11 @@ from botorch.fit import fit_gpytorch_model
 from botorch.acquisition import ProbabilityOfImprovement
 from botorch.optim import optimize_acqf
 
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import MinMaxScaler
+
+import matplotlib.pyplot as plt
+
 
 # SLERP 함수 정의
 def slerp(val, low, high):
@@ -298,6 +303,8 @@ def generate_df(GP_Train_x, index_list, model, config, nan_qed, nan_sa, temp=1.0
     gen_df['gen_sa'] = sa_list
     gen_df['obj'] = 5*gen_df['gen_qed'] - gen_df['gen_sa']
     gen_df['iter'] = index_list
+    gen_df['z_value'] = [z_save for z_save in GP_Train_x]
+    
     
     print(f"Null SMILES: {null_cnt}")
     print(f"# of Unique smiles", len(gen_df.gen_SMILES.unique()))
@@ -376,3 +383,128 @@ def vizualizeMol(gen_df, data_type):
         display(PandasTools.FrameToGridImage(gen_df, column='RoMol', legendsCol='gen_SELFIES', molsPerRow=len(gen_df)))
     else:
         display(PandasTools.FrameToGridImage(gen_df, column='RoMol', legendsCol='gen_SMILES', molsPerRow=len(gen_df)))
+        
+        
+        
+def viz_latent_with_optim(df, z_df, all_df, data_type, model_type, base_pca='mu'):
+    
+    if model_type == 'vae_property':
+        if data_type == 'selfies':
+            folder_path = "../checkpoints/ZINC250K_vae_property_obj_proploss_w0.1_selfies"
+        else:
+            folder_path = "../checkpoints/ZINC250K_vae_property_obj_proploss_w0.1_smiles"
+            
+        config = torch.load(f'{folder_path}/vae_property_config.pt')
+        vocab = torch.load(f'{folder_path}/vae_property_vocab.pt')
+            
+    elif model_type == 'vae':
+        if data_type == 'selfies':
+            folder_path = "../checkpoints/ZINC250K_vae_selfies"
+        else:
+            folder_path = "../checkpoints/ZINC250K_vae_smiles"
+            
+        config = torch.load(f'{folder_path}/vae_config.pt')
+        vocab = torch.load(f'{folder_path}/vae_vocab.pt')
+
+    
+    if data_type == 'selfies':
+        print(f"Use Selfies: {config.use_selfies}")
+        print(config.reg_prop_tasks)
+
+    cols = ['SELFIES' if config.use_selfies else 'SMILES', 'logP', 'qed', 'SAS', 'obj']
+    data = df[cols].values
+
+    if model_type == 'vae_property':
+        model_path = f'{folder_path}/vae_property_model.pt'
+        model = VAEPROPERTY(vocab, config)
+        model.load_state_dict(torch.load(model_path))
+        trainer = VAEPROPERTYTrainer(config)
+
+    elif model_type == 'vae':
+        model_path = f'{folder_path}/vae_model_060.pt'
+
+        model = VAE(vocab, config)
+        model.load_state_dict(torch.load(model_path))
+        trainer = VAETrainer(config)
+
+    train_loader = trainer.get_dataloader(model, data, shuffle=False)
+    
+    model.eval()
+    
+    x_list = []
+    z_list = []
+    mu_list = []
+    logvar_list = []
+    y_list = []
+    
+    for step, batch in enumerate(train_loader):
+        x = batch[0]
+        y = batch[1]
+        x_list.extend(x)
+        y_list.extend(np.array(y).squeeze())
+
+        mu, logvar, z, _ = model.forward_encoder(x)
+        z_list.extend(z.detach().cpu().numpy())
+        mu_list.extend(mu.detach().cpu().numpy())
+        logvar_list.extend(logvar.detach().cpu().numpy())
+    
+    
+    plt.figure(figsize=(12, 10))
+    viz = PCA(n_components=2)
+    if base_pca == 'mu':
+        z_viz = viz.fit_transform(mu_list) # ZINC250k train data
+    else:
+        z_viz = viz.fit_transform(z_list) # ZINC250k train data
+    
+    y_list = np.array(y_list)[:, -1]
+    
+    minmaxscale = MinMaxScaler()
+    z_viz = minmaxscale.fit_transform(z_viz)
+    
+    all_z_str = np.array([z.strip('[]').split() for z in z_df['z_value']])
+    all_z = np.array([np.array(num, dtype=np.float32) for num in all_z_str])
+    
+    str_z = np.array([z.strip('[]').split() for z in z_df['z_value']])
+    z_val = np.array([np.array(num, dtype=np.float32) for num in str_z])
+    
+    qed = z_df['gen_qed'].values
+    sa = z_df['gen_sa'].values
+    obj = 5 * qed - sa
+    
+    if len(z_val) > 2:
+        z_val = [z_val[1], z_val[-2]]
+        obj_list = [obj[1], obj[-2]]
+    else:
+        z_val = [z_val[0], z_val[-1]]
+        obj_list = [obj[0], obj[-1]]
+    
+    print("plot obj values:", obj_list)
+            
+    # PCA
+    gen_z_viz = viz.transform(z_val) # start, end
+    all_z = viz.transform(all_z) # every z values along iteration in optimization (200)
+    z_list = viz.transform(z_list) # ZINC250k train data
+    
+    # scaling
+    all_z_scaler = MinMaxScaler()
+    all_z_scaler.fit(z_list)
+    
+    # gen_z_viz = minmaxscale.transform(gen_z_viz)
+    gen_z_viz = all_z_scaler.transform(gen_z_viz)
+    
+    
+    scatter = plt.scatter(z_viz[:, 0], z_viz[:, 1], c=y_list, cmap='viridis', marker='.', s=10, alpha=0.5, edgecolors='none')
+    gen_scatter = plt.scatter(gen_z_viz[:, 0], gen_z_viz[:, 1], c=['black', 'darkred'], marker='x', s=100, alpha=1.0)
+            
+    for j, color in enumerate(['black', 'darkred']):
+        label = "start" if color == "black" else "end"
+        plt.text(gen_z_viz[j, 0]+0.05, gen_z_viz[j, 1], label, color=color, fontsize=12, ha='right')
+        
+    plt.xlabel('PC1')
+    plt.ylabel('PC2')
+    
+    plt.colorbar(scatter)
+    plt.show()
+    
+    
+# def plot_latent_vector()
